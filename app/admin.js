@@ -1,5 +1,31 @@
 (() => {
-const supabase = window.supabase.createClient(window.ADMIN_CONFIG.SUPABASE_URL, window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY);
+const sessionKey = 'eemti-admin-session';
+function savedSession() { try { return JSON.parse(localStorage.getItem(sessionKey)); } catch (_) { return null; } }
+async function request(url, options = {}) {
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => null);
+  return { data, error: response.ok ? null : data || { message: 'Falha na comunicação com o Supabase.' } };
+}
+const supabase = {
+  auth: {
+    async getSession() { return { data: { session: savedSession() } }; },
+    async signInWithPassword({ email, password }) {
+      const result = await request(`${window.ADMIN_CONFIG.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST', headers: { apikey: window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
+      });
+      if (!result.error) localStorage.setItem(sessionKey, JSON.stringify(result.data));
+      return { error: result.error };
+    },
+    async signOut() { localStorage.removeItem(sessionKey); return { error: null }; }
+  },
+  async rpc(name, args = {}) {
+    const session = savedSession();
+    if (!session?.access_token) return { data: null, error: { message: 'Sessão expirada. Entre novamente.' } };
+    return request(`${window.ADMIN_CONFIG.SUPABASE_URL}/rest/v1/rpc/${name}`, {
+      method: 'POST', headers: { apikey: window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(args)
+    });
+  }
+};
 const $ = id => document.getElementById(id);
 const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', geofences: 'Geocercas' };
 
