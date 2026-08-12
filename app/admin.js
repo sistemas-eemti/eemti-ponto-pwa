@@ -65,7 +65,7 @@ async function loadGeofences() {
 async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'geofences') await loadGeofences(); }
 async function showPage(page) { document.querySelectorAll('.nav').forEach(el => el.classList.toggle('active', el.dataset.page === page)); document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === `${page}-page`)); $('page-title').textContent = pageTitles[page]; await loadPage(page); }
 
-$('login-button').addEventListener('click', async () => {
+async function login() {
   const button = $('login-button');
   $('login-message').textContent = '';
   if (!$('email').value.trim() || !$('password').value) { $('login-message').textContent = 'Informe e-mail e senha.'; return; }
@@ -79,7 +79,9 @@ $('login-button').addEventListener('click', async () => {
   } finally {
     button.disabled = false;
   }
-});
+}
+$('login-form').addEventListener('submit', event => { event.preventDefault(); login(); });
+$('login-button').addEventListener('click', login);
 $('logout').addEventListener('click', async () => { await supabase.auth.signOut(); $('app-view').hidden = true; $('login-view').hidden = false; $('password').value = ''; });
 $('refresh').addEventListener('click', () => loadPage(document.querySelector('.nav.active').dataset.page).catch(error => message(error.message, true)));
 document.querySelectorAll('.nav').forEach(button => button.addEventListener('click', () => showPage(button.dataset.page).catch(error => message(error.message, true))));
