@@ -26,11 +26,19 @@ async function saveToken(channel, matricula, token) {
 }
 
 async function api(payload) {
-  const response = await fetch(window.PONTO_CONFIG.API_URL, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-  });
-  if (!response.ok) throw new Error('Falha de rede.');
-  return response.json();
+  let response;
+  try {
+    response = await fetch(window.PONTO_CONFIG.API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+  } catch (_) {
+    throw new Error('NETWORK');
+  }
+  const text = await response.text();
+  let result;
+  try { result = JSON.parse(text); } catch (_) { throw new Error('GATEWAY'); }
+  if (!response.ok) throw new Error(result.message || 'GATEWAY');
+  return result;
 }
 
 async function syncFor(channel, matricula, credential) {
@@ -51,10 +59,11 @@ async function syncFor(channel, matricula, credential) {
       await storeDelete('queue', item.id);
       if (result.token) { auth.token = result.token; await saveToken(channel, matricula, result.token); }
       last = result;
-    } catch (_) {
+    } catch (error) {
       item.offline = true;
       await storePut('queue', item);
-      return { offline: true };
+      if (error && error.message === 'NETWORK') return { offline: true };
+      return { error: 'Falha na comunicação com o servidor. Verifique a configuração da API.' };
     }
   }
   return { last };
