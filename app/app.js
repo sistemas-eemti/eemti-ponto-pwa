@@ -7,7 +7,9 @@ function atualizarRelogio() { const now = new Date(); $('clock').textContent = n
 
 async function status() {
   const count = await pendingCount(channel);
-  $('network').textContent = (navigator.onLine ? 'Conectado' : 'Sem conexão') + (count ? ' · ' + count + ' batida(s) pendente(s).' : '');
+  const online = navigator.onLine;
+  $('network').className = 'network ' + (online ? 'online' : 'offline');
+  $('network').textContent = (online ? 'Conectado' : 'Sem conexão') + (count ? ' · ' + count + ' batida(s) pendente(s).' : '');
 }
 
 async function queuePunch(matricula, geo) {
