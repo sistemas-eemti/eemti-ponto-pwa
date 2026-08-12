@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#117437">
+  <link rel="stylesheet" href="app/admin.css?v=1">
+  <title>Administração | EEMTI Ponto</title>
+</head>
+<body>
+  <main id="login-view" class="login-view">
+    <form id="login-form" class="login-card">
+      <img src="assets/logo-eemti.png" alt="EEMTI Monsenhor José Augusto da Silva">
+      <p class="eyebrow">Sistema de ponto</p>
+      <h1>Administração</h1>
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <label for="password">Senha</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button>Entrar</button>
+      <p id="login-message" class="message"></p>
+    </form>
+  </main>
+
+  <main id="app-view" class="app-view" hidden>
+    <aside>
+      <img src="assets/logo-eemti.png" alt="EEMTI Monsenhor José Augusto da Silva">
+      <p class="eyebrow">Administração</p>
+      <nav>
+        <button class="nav active" data-page="dashboard">Visão geral</button>
+        <button class="nav" data-page="employees">Funcionários</button>
+        <button class="nav" data-page="geofences">Geocercas</button>
+      </nav>
+      <div class="account"><strong id="account-name"></strong><button id="logout" class="link">Sair</button></div>
+    </aside>
+    <section class="content">
+      <header><div><p class="eyebrow" id="page-eyebrow">Administração</p><h1 id="page-title">Visão geral</h1></div><button id="refresh" class="secondary">Atualizar</button></header>
+      <p id="app-message" class="message"></p>
+
+      <section id="dashboard-page" class="page active">
+        <div class="kpis">
+          <article><strong id="total-employees">0</strong><span>Funcionários ativos</span></article>
+          <article><strong id="today-punches">0</strong><span>Batidas hoje</span></article>
+          <article><strong id="outside-punches">0</strong><span>Fora da geocerca hoje</span></article>
+          <article><strong id="active-geofences">0</strong><span>Geocercas ativas</span></article>
+        </div>
+        <article class="panel"><h2>Últimas batidas</h2><div class="table-wrap"><table><thead><tr><th>Horário</th><th>Funcionário</th><th>Canal</th><th>Localização</th></tr></thead><tbody id="recent-punches"></tbody></table></div></article>
+      </section>
+
+      <section id="employees-page" class="page">
+        <div class="two-columns">
+          <form id="employee-form" class="panel"><h2>Cadastrar funcionário</h2><label>Matrícula<input id="employee-enrollment" required></label><label>Nome<input id="employee-name" required></label><label>PIN inicial<input id="employee-pin" type="password" inputmode="numeric" minlength="4" required></label><label>Departamento<select id="employee-department"></select></label><label>Cargo<select id="employee-position"></select></label><label>Jornada<select id="employee-schedule"></select></label><button>Salvar funcionário</button></form>
+          <article class="panel"><h2>Funcionários cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Departamento</th><th>Status</th></tr></thead><tbody id="employees-list"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="geofences-page" class="page">
+        <div class="two-columns">
+          <form id="geofence-form" class="panel"><h2>Nova geocerca</h2><label>Nome<input id="geofence-name" required></label><label>Latitude<input id="geofence-latitude" type="number" step="0.0000001" required></label><label>Longitude<input id="geofence-longitude" type="number" step="0.0000001" required></label><label>Raio em metros<input id="geofence-radius" type="number" min="1" required></label><button>Salvar geocerca</button></form>
+          <article class="panel"><h2>Geocercas cadastradas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Coordenadas</th><th>Raio</th><th>Status</th></tr></thead><tbody id="geofences-list"></tbody></table></div></article>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="app/admin-config.js?v=1"></script>
+  <script type="module" src="app/admin.js?v=1"></script>
+</body>
+</html>
