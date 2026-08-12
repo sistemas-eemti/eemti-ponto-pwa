@@ -1,6 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(window.ADMIN_CONFIG.SUPABASE_URL, window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY);
+const supabase = window.supabase.createClient(window.ADMIN_CONFIG.SUPABASE_URL, window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
 const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', geofences: 'Geocercas' };
 
@@ -61,4 +59,6 @@ document.querySelectorAll('.nav').forEach(button => button.addEventListener('cli
 $('employee-form').addEventListener('submit', async event => { event.preventDefault(); const { error } = await supabase.rpc('admin_save_employee', { p_enrollment: $('employee-enrollment').value, p_name: $('employee-name').value, p_pin: $('employee-pin').value, p_department_id: $('employee-department').value || null, p_position_id: $('employee-position').value || null, p_schedule_id: $('employee-schedule').value || null }); if (error) { message(error.message, true); return; } event.target.reset(); message('Funcionário salvo.'); await loadEmployees(); });
 $('geofence-form').addEventListener('submit', async event => { event.preventDefault(); const { error } = await supabase.rpc('admin_create_geofence', { p_name: $('geofence-name').value.trim(), p_latitude: $('geofence-latitude').value, p_longitude: $('geofence-longitude').value, p_radius_meters: $('geofence-radius').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Geocerca salva.'); await loadGeofences(); });
 
-if (await requireAdmin()) await showPage('dashboard').catch(error => message(error.message, true));
+requireAdmin().then(isAdmin => {
+  if (isAdmin) return showPage('dashboard');
+}).catch(error => { $('login-message').textContent = error.message || 'Não foi possível iniciar o Admin.'; });
