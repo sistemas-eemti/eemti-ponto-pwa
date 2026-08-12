@@ -33,8 +33,8 @@ async function punch() {
     }
     await queuePunch(matricula, geo);
     const result = await syncFor(channel, matricula, { pin, token: await tokenFor(channel, matricula) });
-    if (result.last) { feedback('ok', result.last.message || 'Batida registrada.'); $('matricula').value = ''; $('pin').value = ''; }
-    else if (result.offline) feedback('warn', 'Sem conexão. Batida salva neste aparelho.');
+    if (result.last) { feedback('ok', result.last.message || 'Batida registrada.'); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
+    else if (result.offline) { feedback('warn', 'Sem conexão. Batida salva neste aparelho.'); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
     else feedback('error', result.error || 'Batida pendente.');
   } catch (_) { feedback('error', needsGeo ? 'Não foi possível obter a localização.' : 'Não foi possível registrar a batida.'); }
   $('punch').disabled = false;
@@ -63,5 +63,13 @@ window.addEventListener('online', autoSync);
 window.addEventListener('offline', status);
 $('punch').addEventListener('click', punch);
 const syncButton = $('sync'); if (syncButton) syncButton.addEventListener('click', syncPending);
+if (channel === 'quiosque') {
+  $('matricula').addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); $('pin').focus(); }
+  });
+  $('pin').addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); punch(); }
+  });
+}
 setInterval(atualizarRelogio, 1000); atualizarRelogio();
-(async () => { try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {} await status(); await autoSync(); if (channel === 'quiosque') setInterval(autoSync, 30000); })();
+(async () => { try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {} await status(); await autoSync(); if (channel === 'quiosque') { setInterval(autoSync, 30000); setTimeout(() => $('matricula').focus(), 0); } })();
