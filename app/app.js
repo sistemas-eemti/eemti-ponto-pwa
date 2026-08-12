@@ -3,7 +3,7 @@ const needsGeo = channel === 'mobile';
 const $ = id => document.getElementById(id);
 
 function feedback(kind, text) { const el = $('feedback'); el.className = 'feedback ' + kind; el.textContent = text; }
-function clock() { const now = new Date(); $('clock').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); $('date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
+function atualizarRelogio() { const now = new Date(); $('clock').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); $('date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
 
 async function status() {
   const count = await pendingCount(channel);
@@ -61,5 +61,5 @@ window.addEventListener('online', autoSync);
 window.addEventListener('offline', status);
 $('punch').addEventListener('click', punch);
 const syncButton = $('sync'); if (syncButton) syncButton.addEventListener('click', syncPending);
-setInterval(clock, 1000); clock();
+setInterval(atualizarRelogio, 1000); atualizarRelogio();
 (async () => { try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {} await status(); await autoSync(); if (channel === 'quiosque') setInterval(autoSync, 30000); })();
