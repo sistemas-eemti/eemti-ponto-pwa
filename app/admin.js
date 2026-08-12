@@ -53,7 +53,21 @@ async function loadGeofences() {
 async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'geofences') await loadGeofences(); }
 async function showPage(page) { document.querySelectorAll('.nav').forEach(el => el.classList.toggle('active', el.dataset.page === page)); document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === `${page}-page`)); $('page-title').textContent = pageTitles[page]; await loadPage(page); }
 
-$('login-form').addEventListener('submit', async event => { event.preventDefault(); $('login-message').textContent = ''; const { error } = await supabase.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value }); if (error) { $('login-message').textContent = 'E-mail ou senha inválidos.'; return; } if (await requireAdmin()) await showPage('dashboard'); });
+$('login-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = $('login-form').querySelector('button');
+  $('login-message').textContent = '';
+  button.disabled = true;
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+    if (error) { $('login-message').textContent = 'E-mail ou senha inválidos.'; return; }
+    if (await requireAdmin()) await showPage('dashboard');
+  } catch (error) {
+    $('login-message').textContent = error.message || 'Não foi possível entrar. Tente novamente.';
+  } finally {
+    button.disabled = false;
+  }
+});
 $('logout').addEventListener('click', async () => { await supabase.auth.signOut(); $('app-view').hidden = true; $('login-view').hidden = false; $('password').value = ''; });
 $('refresh').addEventListener('click', () => loadPage(document.querySelector('.nav.active').dataset.page).catch(error => message(error.message, true)));
 document.querySelectorAll('.nav').forEach(button => button.addEventListener('click', () => showPage(button.dataset.page).catch(error => message(error.message, true))));
