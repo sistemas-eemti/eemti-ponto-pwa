@@ -1,3 +1,4 @@
+(() => {
 const supabase = window.supabase.createClient(window.ADMIN_CONFIG.SUPABASE_URL, window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
 const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', geofences: 'Geocercas' };
@@ -62,3 +63,4 @@ $('geofence-form').addEventListener('submit', async event => { event.preventDefa
 requireAdmin().then(isAdmin => {
   if (isAdmin) return showPage('dashboard');
 }).catch(error => { $('login-message').textContent = error.message || 'Não foi possível iniciar o Admin.'; });
+})();

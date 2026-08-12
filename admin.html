@@ -49,7 +49,7 @@
 
       <section id="employees-page" class="page">
         <div class="two-columns">
-          <form id="employee-form" class="panel"><h2>Cadastrar funcionário</h2><label>Matrícula<input id="employee-enrollment" required></label><label>Nome<input id="employee-name" required></label><label>PIN inicial<input id="employee-pin" type="password" inputmode="numeric" minlength="4" required></label><label>Departamento<select id="employee-department"></select></label><label>Cargo<select id="employee-position"></select></label><label>Jornada<select id="employee-schedule"></select></label><button>Salvar funcionário</button></form>
+          <form id="employee-form" class="panel"><h2>Cadastrar funcionário</h2><label>Matrícula<input id="employee-enrollment" required></label><label>Nome<input id="employee-name" required></label><label>PIN inicial<input id="employee-pin" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" required></label><label>Departamento<select id="employee-department"></select></label><label>Cargo<select id="employee-position"></select></label><label>Jornada<select id="employee-schedule"></select></label><button>Salvar funcionário</button></form>
           <article class="panel"><h2>Funcionários cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Departamento</th><th>Status</th></tr></thead><tbody id="employees-list"></tbody></table></div></article>
         </div>
       </section>
@@ -64,6 +64,6 @@
   </main>
   <script src="app/admin-config.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="app/admin.js?v=5"></script>
+  <script src="app/admin.js?v=6"></script>
 </body>
 </html>
