@@ -52,6 +52,10 @@ async function syncFor(channel, matricula, credential) {
     try {
       const result = await api({ action: 'sync', record: item, credential: auth });
       if (!result.ok) {
+        if (result.message === 'Batida repetida. Aguarde um instante e tente de novo.') {
+          await storeDelete('queue', item.id);
+          return { error: result.message };
+        }
         item.error = result.message || 'Falha na sincronização.';
         await storePut('queue', item);
         return { error: item.error };

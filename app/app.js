@@ -63,7 +63,7 @@ window.addEventListener('online', autoSync);
 window.addEventListener('offline', status);
 $('punch').addEventListener('click', punch);
 const syncButton = $('sync'); if (syncButton) syncButton.addEventListener('click', syncPending);
-if (channel === 'quiosque') {
+if (channel === 'kiosk') {
   $('matricula').addEventListener('keydown', event => {
     if (event.key === 'Enter') { event.preventDefault(); $('pin').focus(); }
   });
@@ -72,4 +72,4 @@ if (channel === 'quiosque') {
   });
 }
 setInterval(atualizarRelogio, 1000); atualizarRelogio();
-(async () => { try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {} await status(); await autoSync(); if (channel === 'quiosque') { setInterval(autoSync, 30000); setTimeout(() => $('matricula').focus(), 0); } })();
+(async () => { try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {} await status(); await autoSync(); if (channel === 'kiosk') { setInterval(autoSync, 30000); setTimeout(() => $('matricula').focus(), 0); } })();

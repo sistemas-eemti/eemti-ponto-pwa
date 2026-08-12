@@ -17,7 +17,7 @@ create or replace function public.sync_punch(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_employee public.employees%rowtype;
@@ -67,23 +67,23 @@ begin
   returning id into v_device_id;
 
   if coalesce(p_pin, '') <> '' then
-    if v_employee.pin_hash is null or v_employee.pin_hash <> crypt(p_pin, v_employee.pin_hash) then
+    if v_employee.pin_hash is null or v_employee.pin_hash <> extensions.crypt(p_pin, v_employee.pin_hash) then
       return jsonb_build_object('ok', false, 'message', 'PIN incorreto.');
     end if;
-    v_token := encode(gen_random_bytes(32), 'hex');
+    v_token := encode(extensions.gen_random_bytes(32), 'hex');
     insert into public.device_tokens (employee_id, device_id, token_hash, expires_at)
-    values (v_employee.id, v_device_id, encode(digest(v_token, 'sha256'), 'hex'), now() + interval '72 hours');
+    values (v_employee.id, v_device_id, encode(extensions.digest(v_token, 'sha256'), 'hex'), now() + interval '72 hours');
   elsif not exists (
     select 1 from public.device_tokens
     where employee_id = v_employee.id and device_id = v_device_id
-      and token_hash = encode(digest(coalesce(p_token, ''), 'sha256'), 'hex')
+       and token_hash = encode(extensions.digest(coalesce(p_token, ''), 'sha256'), 'hex')
       and expires_at > now()
   ) then
     return jsonb_build_object('ok', false, 'message', 'Autorização offline expirada. Informe matrícula e PIN novamente.');
   else
     update public.device_tokens set last_used_at = now()
     where employee_id = v_employee.id and device_id = v_device_id
-      and token_hash = encode(digest(p_token, 'sha256'), 'hex');
+       and token_hash = encode(extensions.digest(p_token, 'sha256'), 'hex');
     v_token := p_token;
   end if;
 
@@ -124,7 +124,7 @@ begin
   end;
   select hash into v_previous_hash from public.punches order by created_at desc limit 1;
   v_previous_hash := coalesce(v_previous_hash, '');
-  v_hash := encode(digest(
+  v_hash := encode(extensions.digest(
     p_client_record_id || '|' || v_employee.enrollment || '|' || v_effective_at::text || '|' || v_origin || '|' || v_previous_hash,
     'sha256'
   ), 'hex');

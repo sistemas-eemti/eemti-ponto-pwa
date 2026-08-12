@@ -16,7 +16,7 @@ export default {
       if (body.action !== 'sync' || !body.record) return new Response(JSON.stringify({ ok: false, message: 'Requisição inválida.' }), { status: 400, headers });
        const record = body.record;
        const credential = body.credential || {};
-       const response = await fetch(env.SUPABASE_URL + '/rest/v1/rpc/sync_punch', {
+       const response = await fetch(env.SUPABASE_URL + '/rest/v1/rpc/sync_punch_api', {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
@@ -24,21 +24,24 @@ export default {
            'Authorization': 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY
          },
          body: JSON.stringify({
-           p_client_record_id: record.id,
-           p_channel: record.channel,
-           p_device_id: record.deviceId,
-           p_enrollment: record.matricula,
-           p_captured_at: record.capturedAt,
-           p_offline: record.offline === true,
-           p_latitude: record.latitude ?? null,
-           p_longitude: record.longitude ?? null,
-           p_accuracy_meters: record.accuracy ?? null,
-           p_pin: credential.pin || null,
-           p_token: credential.token || null
+           p_payload: {
+             client_record_id: record.id,
+             channel: record.channel,
+             device_id: record.deviceId,
+             enrollment: record.matricula,
+             captured_at: record.capturedAt,
+             offline: record.offline === true,
+             latitude: record.latitude ?? null,
+             longitude: record.longitude ?? null,
+             accuracy_meters: record.accuracy ?? null,
+             pin: credential.pin || null,
+             token: credential.token || null
+           }
          })
        });
-      const result = await response.text();
-      return new Response(result, { status: response.ok ? 200 : 502, headers });
+       const result = await response.text();
+       if (!response.ok) console.error('Supabase RPC error', response.status, result);
+       return new Response(result, { status: response.ok ? 200 : 502, headers });
     } catch (_) {
       return new Response(JSON.stringify({ ok: false, message: 'Falha no gateway.' }), { status: 502, headers });
     }
