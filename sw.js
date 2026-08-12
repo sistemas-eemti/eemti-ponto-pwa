@@ -1,4 +1,4 @@
-const CACHE = 'eemti-ponto-v2';
+const CACHE = 'eemti-ponto-v3';
 const ASSETS = ['./','./index.html','./mobile.html','./quiosque.html','./manifest.webmanifest','./app/config.js','./app/styles.css','./app/db.js','./app/ponto.js'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
