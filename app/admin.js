@@ -12,9 +12,10 @@ function todayRange() { const date = new Date(); date.setHours(0, 0, 0, 0); retu
 async function requireAdmin() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return false;
-  const { data: profile } = await supabase.from('admin_profiles').select('role, display_name, active').eq('user_id', session.user.id).maybeSingle();
-  if (!profile || !profile.active || profile.role !== 'admin') { await supabase.auth.signOut(); $('login-message').textContent = 'Esta conta não possui acesso administrativo.'; return false; }
-  $('account-name').textContent = profile.display_name || session.user.email;
+  const { data: isAdmin, error } = await supabase.rpc('is_admin');
+  if (error || !isAdmin) { await supabase.auth.signOut(); $('login-message').textContent = 'Esta conta não possui acesso administrativo.'; return false; }
+  const { data: profile } = await supabase.from('admin_profiles').select('display_name').eq('user_id', session.user.id).maybeSingle();
+  $('account-name').textContent = profile?.display_name || session.user.email;
   $('login-view').hidden = true; $('app-view').hidden = false;
   return true;
 }
