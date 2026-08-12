@@ -39,10 +39,10 @@ async function loadGeofences() {
 async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'geofences') await loadGeofences(); }
 async function showPage(page) { document.querySelectorAll('.nav').forEach(el => el.classList.toggle('active', el.dataset.page === page)); document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === `${page}-page`)); $('page-title').textContent = pageTitles[page]; await loadPage(page); }
 
-$('login-form').addEventListener('submit', async event => {
-  event.preventDefault();
-  const button = $('login-form').querySelector('button');
+$('login-button').addEventListener('click', async () => {
+  const button = $('login-button');
   $('login-message').textContent = '';
+  if (!$('email').value.trim() || !$('password').value) { $('login-message').textContent = 'Informe e-mail e senha.'; return; }
   button.disabled = true;
   try {
     const { error } = await supabase.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
@@ -62,5 +62,6 @@ $('geofence-form').addEventListener('submit', async event => { event.preventDefa
 
 requireAdmin().then(isAdmin => {
   if (isAdmin) return showPage('dashboard');
+  $('login-message').textContent = 'Pronto para entrar.';
 }).catch(error => { $('login-message').textContent = error.message || 'Não foi possível iniciar o Admin.'; });
 })();
