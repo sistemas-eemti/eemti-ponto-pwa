@@ -16,9 +16,9 @@ $$;
 
 create or replace function public.admin_save_absence(
   p_id uuid default null,
-  p_enrollment text,
-  p_date date,
-  p_type text,
+  p_enrollment text default null,
+  p_date date default null,
+  p_type text default null,
   p_reason text default null,
   p_excused boolean default false
 )

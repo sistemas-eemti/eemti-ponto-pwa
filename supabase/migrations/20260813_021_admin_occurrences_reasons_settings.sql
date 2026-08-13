@@ -35,8 +35,8 @@ $$;
 
 create or replace function public.admin_save_occurrence(
   p_id uuid default null,
-  p_enrollment text,
-  p_date date,
+  p_enrollment text default null,
+  p_date date default null,
   p_type text default null,
   p_description text default null
 )
@@ -87,7 +87,7 @@ $$;
 
 create or replace function public.admin_save_reason(
   p_id uuid default null,
-  p_description text,
+  p_description text default null,
   p_category text default 'ajuste',
   p_active boolean default true
 )
