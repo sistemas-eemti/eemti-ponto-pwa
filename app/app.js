@@ -4,7 +4,9 @@ const $ = id => document.getElementById(id);
 
 function escapeText(value) { const el = document.createElement('span'); el.textContent = value ?? ''; return el.innerHTML; }
 
+let successFeedbackTimer;
 function feedback(kind, text) { const el = $('feedback'); el.className = 'feedback ' + kind; el.textContent = text; }
+function clearSuccessFeedback() { clearTimeout(successFeedbackTimer); successFeedbackTimer = setTimeout(() => { const el = $('feedback'); if (el.classList.contains('ok') || el.classList.contains('warn')) feedback('', ''); }, 5000); }
 function atualizarRelogio() { const now = new Date(); $('clock').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); $('date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
 
 function applyTheme(theme) {
@@ -43,8 +45,8 @@ async function punch() {
     }
     await queuePunch(matricula, geo);
     const result = await syncFor(channel, matricula, { pin, token: await tokenFor(channel, matricula) });
-    if (result.last) { const el = $('feedback'); el.className = 'feedback ok'; el.innerHTML = escapeText(result.last.message || 'Batida registrada.') + (result.last.aviso ? '<br><span class="aviso">' + escapeText(result.last.aviso) + '</span>' : ''); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
-    else if (result.offline) { feedback('warn', 'Sem conexão. Batida salva neste aparelho.'); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
+    if (result.last) { const el = $('feedback'); el.className = 'feedback ok'; el.innerHTML = escapeText(result.last.message || 'Batida registrada.') + (result.last.aviso ? '<br><span class="aviso">' + escapeText(result.last.aviso) + '</span>' : ''); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); clearSuccessFeedback(); }
+    else if (result.offline) { feedback('warn', 'Sem conexão. Batida salva neste aparelho.'); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); clearSuccessFeedback(); }
     else feedback('error', result.error || 'Batida pendente.');
   } catch (_) { feedback('error', needsGeo ? 'Não foi possível obter a localização.' : 'Não foi possível registrar a batida.'); }
   $('punch').disabled = false;

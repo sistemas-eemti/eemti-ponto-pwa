@@ -1,5 +1,5 @@
-const CACHE = 'eemti-ponto-v9';
-const ASSETS = ['./','./index.html','./mobile.html','./quiosque.html','./manifest.webmanifest','./assets/logo-eemti.png','./app/config.js?v=5','./app/styles.css?v=8','./app/db.js?v=5','./app/ponto.js?v=8','./app/app.js?v=11'];
+const CACHE = 'eemti-ponto-v10';
+const ASSETS = ['./','./index.html','./mobile.html','./quiosque.html','./manifest.webmanifest','./assets/logo-eemti.png','./app/config.js?v=5','./app/styles.css?v=9','./app/db.js?v=5','./app/ponto.js?v=8','./app/app.js?v=13'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(
   caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())
