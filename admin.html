@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#117437">
-  <link rel="stylesheet" href="app/admin.css?v=2">
+  <link rel="stylesheet" href="app/admin.css?v=3">
   <title>Administração | EEMTI Ponto</title>
 </head>
 <body>
@@ -29,6 +29,9 @@
       <nav>
         <button class="nav active" data-page="dashboard">Visão geral</button>
         <button class="nav" data-page="employees">Funcionários</button>
+        <button class="nav" data-page="departments">Departamentos</button>
+        <button class="nav" data-page="positions">Cargos</button>
+        <button class="nav" data-page="schedules">Jornadas</button>
         <button class="nav" data-page="geofences">Geocercas</button>
       </nav>
       <div class="account"><strong id="account-name"></strong><button id="logout" class="link">Sair</button></div>
@@ -50,7 +53,28 @@
       <section id="employees-page" class="page">
         <div class="two-columns">
           <form id="employee-form" class="panel"><h2>Cadastrar funcionário</h2><label>Matrícula<input id="employee-enrollment" required></label><label>Nome<input id="employee-name" required></label><label>PIN inicial<input id="employee-pin" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" required></label><label>Departamento<select id="employee-department"></select></label><label>Cargo<select id="employee-position"></select></label><label>Jornada<select id="employee-schedule"></select></label><button>Salvar funcionário</button></form>
-          <article class="panel"><h2>Funcionários cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Departamento</th><th>Status</th></tr></thead><tbody id="employees-list"></tbody></table></div></article>
+          <article class="panel"><h2>Funcionários cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Departamento</th><th>Status</th><th>Ações</th></tr></thead><tbody id="employees-list"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="departments-page" class="page">
+        <div class="two-columns">
+          <form id="department-form" class="panel"><h2>Novo departamento</h2><input type="hidden" id="department-id"><label>Nome<input id="department-name" required></label><button>Salvar departamento</button></form>
+          <article class="panel"><h2>Departamentos</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Funcionários</th><th>Ações</th></tr></thead><tbody id="departments-list"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="positions-page" class="page">
+        <div class="two-columns">
+          <form id="position-form" class="panel"><h2>Novo cargo</h2><input type="hidden" id="position-id"><label>Nome<input id="position-name" required></label><button>Salvar cargo</button></form>
+          <article class="panel"><h2>Cargos</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Funcionários</th><th>Ações</th></tr></thead><tbody id="positions-list"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="schedules-page" class="page">
+        <div class="two-columns">
+          <form id="schedule-form" class="panel"><h2>Nova jornada</h2><input type="hidden" id="schedule-id"><label>Nome<input id="schedule-name" required></label><div class="row"><div><label>Entrada<input id="schedule-entry" type="time"></label></div><div><label>Saída<input id="schedule-exit" type="time"></label></div></div><div class="row"><div><label>Carga diária (min)<input id="schedule-minutes" type="number" min="0" value="480"></label></div><div><label>Tolerância (min)<input id="schedule-tolerance" type="number" min="0" value="10"></label></div></div><button>Salvar jornada</button></form>
+          <article class="panel"><h2>Jornadas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Entrada</th><th>Saída</th><th>Carga</th><th>Tolerância</th><th>Ações</th></tr></thead><tbody id="schedules-list"></tbody></table></div></article>
         </div>
       </section>
 
@@ -63,6 +87,6 @@
     </section>
   </main>
   <script src="app/admin-config.js?v=1"></script>
-  <script src="app/admin.js?v=9"></script>
+  <script src="app/admin.js?v=10"></script>
 </body>
 </html>
