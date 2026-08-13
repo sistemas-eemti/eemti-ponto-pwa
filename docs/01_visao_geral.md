@@ -89,8 +89,6 @@ Detalhes completos em [04 — Banco de dados](04_banco_de_dados.md).
 
 ## Não faz parte (decisões da migração)
 
-- **Campos extras do funcionário** (sexo, nascimento, salário, código de barras, endereço,
-  CEP, telefones): não existiam no novo schema e não foram replicados.
 - **Backup/auditoria no estilo Google Drive**: o Supabase tem backup nativo; não replicado.
 - **Reset de senha de outro usuário**: exige a chave de serviço; os usuários trocam a própria
   senha pela página Acessos.

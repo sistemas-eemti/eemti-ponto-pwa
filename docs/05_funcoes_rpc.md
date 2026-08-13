@@ -77,8 +77,8 @@ checagens de acesso.
 | `admin_list_schedules` | `()` → jsonb | Lista com entrada/saída/intervalo/carga/tolerância |
 | `admin_save_schedule` | `(p_id uuid, p_name text, p_entry_time text, p_exit_time text, p_break_start text, p_break_end text, p_daily_minutes int, p_tolerance_minutes int)` → void | Cria/edita; valida intervalo |
 | `admin_delete_schedule` | `(p_id uuid)` → void | Recusa se houver vínculos |
-| `admin_list_employees` | `()` → jsonb | Lista completa de funcionários (ativos/inativos) |
-| `admin_save_employee` | `(p_enrollment text, p_name text, p_pin text default null, p_department_id uuid default null, p_position_id uuid default null, p_schedule_id uuid default null)` → employees | Cria/edita; PIN obrigatório só na criação; vazio mantém o PIN atual |
+| `admin_list_employees` | `()` → jsonb | Lista completa de funcionários (ativos/inativos), incluindo dados pessoais e de contato |
+| `admin_save_employee` | `(p_enrollment text, p_name text, p_pin text default null, p_department_id uuid default null, p_position_id uuid default null, p_schedule_id uuid default null, p_cpf text, p_pis text, p_sex text, p_birth_date date, p_admission_date date, p_salary numeric, p_barcode text, p_address text, p_neighborhood text, p_city text, p_cep text, p_phone text, p_mobile text, p_active boolean)` → employees | Cria/edita com todos os dados do funcionário; PIN obrigatório só na criação; vazio mantém o PIN atual |
 | `admin_set_employee_active` | `(p_enrollment text, p_active boolean)` → void | Ativa/inativa |
 | `admin_list_geofences` | `()` → jsonb | Lista geocercas |
 | `admin_create_geofence` | `(p_name text, p_latitude numeric, p_longitude numeric, p_radius_meters int)` → void | Cria |

@@ -17,6 +17,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   10. `20260813_020_admin_outside_attendance.sql`
   11. `20260813_021_admin_occurrences_reasons_settings.sql`
   12. `20260813_022_admin_manual_punch.sql`
+  13. `20260813_023_admin_employee_details.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)
@@ -33,8 +34,10 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 - [ ] Departamentos: criar, editar, listar (coluna "Funcionários" atualiza), excluir.
 - [ ] Cargos: criar, editar, listar, excluir.
 - [ ] Jornadas: criar (nome, entrada, saída, **intervalo**, carga diária, tolerância), editar, excluir.
-- [ ] Funcionário: cadastrar com matrícula, nome, PIN, departamento, cargo e jornada.
-- [ ] **Editar funcionário**: clicar "Editar" preenche o formulário; salvar sem PIN mantém o PIN atual; alterar PIN troca o PIN.
+- [ ] Funcionário: cadastrar com matrícula, nome, PIN, CPF, PIS, sexo, nascimento, departamento, cargo, jornada, admissão, salário, situação, código de barras, endereço, bairro, cidade, CEP, telefone e celular.
+- [ ] **Editar funcionário**: clicar "Editar" preenche **todos** os campos; salvar sem PIN mantém o PIN atual; alterar PIN troca o PIN.
+- [ ] Editar funcionário: **cadastrar um CPF duplicado** → erro de unicidade; limpar o campo CPF e salvar → funciona.
+- [ ] Salário: aceitar valor decimal (ex.: `2500.00`); campo vazio fica nulo.
 - [ ] Ativar/inativar funcionário pela coluna "Ações".
 - [ ] Geocercas: criar com nome, latitude, longitude, raio; listar; **inativar/ativar; excluir**.
 - [ ] Feriados: criar (data, descrição, tipo), listar, excluir.

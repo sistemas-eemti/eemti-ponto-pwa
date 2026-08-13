@@ -33,6 +33,7 @@ Banco: **PostgreSQL (Supabase)**, schema `public`. Todas as migrations estão em
 | 020 | `20260813_020_admin_outside_attendance.sql` | Relatório "fora da cerca" e assiduidade por funcionário. |
 | 021 | `20260813_021_admin_occurrences_reasons_settings.sql` | CRUD de ocorrências, motivos (`reasons`) e opções (`settings`); resumo por departamento; `aviso` na batida. |
 | 022 | `20260813_022_admin_manual_punch.sql` | Batida manual + lista de batidas por funcionário (manutenção de ponto). |
+| 023 | `20260813_023_admin_employee_details.sql` | Campos adicionais do funcionário (sexo, nascimento, salário, código de barras, endereço, CEP, telefones) e RPCs de salvar/listar completas. |
 
 ---
 
@@ -81,6 +82,16 @@ Banco: **PostgreSQL (Supabase)**, schema `public`. Todas as migrations estão em
 | pin_hash | text | bcrypt (nunca retornado ao navegador) |
 | active | boolean | default `true` |
 | admitted_on | date | data de admissão |
+| sex | text | Masculino / Feminino / Outro (opcional) |
+| birth_date | date | data de nascimento (opcional) |
+| salary | numeric(12,2) | salário (opcional) |
+| barcode | text | código de barras da carteirinha (opcional) |
+| address | text | endereço (opcional) |
+| neighborhood | text | bairro (opcional) |
+| city | text | cidade (opcional) |
+| cep | text | CEP (opcional) |
+| phone | text | telefone fixo (opcional) |
+| mobile | text | celular (opcional) |
 | created_at / updated_at | timestamptz | trigger atualiza `updated_at` |
 
 ### 2.5 `geofences`

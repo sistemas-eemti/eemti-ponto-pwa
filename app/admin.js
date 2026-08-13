@@ -112,14 +112,29 @@ function editEmployee(enrollment) {
   if (!row) return;
   $('employee-enrollment').value = row.enrollment;
   $('employee-name').value = row.name;
-  $('employee-pin').value = '';
+  $('employee-cpf').value = row.cpf || '';
+  $('employee-pis').value = row.pis || '';
+  $('employee-sex').value = row.sex || '';
+  $('employee-birth').value = row.birth_date || '';
   $('employee-department').value = row.department_id || '';
   $('employee-position').value = row.position_id || '';
   $('employee-schedule').value = row.schedule_id || '';
+  $('employee-admission').value = row.admitted_on || '';
+  $('employee-salary').value = row.salary ?? '';
+  $('employee-active').value = row.active ? 'true' : 'false';
+  $('employee-barcode').value = row.barcode || '';
+  $('employee-pin').value = '';
+  $('employee-address').value = row.address || '';
+  $('employee-neighborhood').value = row.neighborhood || '';
+  $('employee-city').value = row.city || '';
+  $('employee-cep').value = row.cep || '';
+  $('employee-phone').value = row.phone || '';
+  $('employee-mobile').value = row.mobile || '';
+  $('employee-pin-label').textContent = 'PIN (vazio = manter)';
   message('Editando funcionário. Deixe o PIN em branco para manter o atual.');
 }
 
-function clearEmployee() { const form = $('employee-form'); form.reset(); message(''); }
+function clearEmployee() { const form = $('employee-form'); form.reset(); $('employee-pin-label').textContent = 'PIN'; message(''); }
 
 async function toggleGeofence(id, active) {
   const { error } = await supabase.rpc('admin_set_geofence_active', { p_id: id, p_active: active });
@@ -526,7 +541,7 @@ $('login-button').addEventListener('click', login);
 $('logout').addEventListener('click', async () => { await supabase.auth.signOut(); $('app-view').hidden = true; $('login-view').hidden = false; $('password').value = ''; });
 $('refresh').addEventListener('click', () => loadPage(document.querySelector('.nav.active').dataset.page).catch(error => message(error.message, true)));
 document.querySelectorAll('.nav').forEach(button => button.addEventListener('click', () => showPage(button.dataset.page).catch(error => message(error.message, true))));
-$('employee-form').addEventListener('submit', async event => { event.preventDefault(); const { error } = await supabase.rpc('admin_save_employee', { p_enrollment: $('employee-enrollment').value, p_name: $('employee-name').value, p_pin: $('employee-pin').value, p_department_id: $('employee-department').value || null, p_position_id: $('employee-position').value || null, p_schedule_id: $('employee-schedule').value || null }); if (error) { message(error.message, true); return; } event.target.reset(); message('Funcionário salvo.'); await loadEmployees(); });
+$('employee-form').addEventListener('submit', async event => { event.preventDefault(); const { error } = await supabase.rpc('admin_save_employee', { p_enrollment: $('employee-enrollment').value, p_name: $('employee-name').value, p_pin: $('employee-pin').value, p_department_id: $('employee-department').value || null, p_position_id: $('employee-position').value || null, p_schedule_id: $('employee-schedule').value || null, p_cpf: $('employee-cpf').value, p_pis: $('employee-pis').value, p_sex: $('employee-sex').value, p_birth_date: $('employee-birth').value || null, p_admission_date: $('employee-admission').value || null, p_salary: $('employee-salary').value === '' ? null : Number($('employee-salary').value), p_barcode: $('employee-barcode').value, p_address: $('employee-address').value, p_neighborhood: $('employee-neighborhood').value, p_city: $('employee-city').value, p_cep: $('employee-cep').value, p_phone: $('employee-phone').value, p_mobile: $('employee-mobile').value, p_active: $('employee-active').value === 'true' }); if (error) { message(error.message, true); return; } event.target.reset(); $('employee-pin-label').textContent = 'PIN'; message('Funcionário salvo.'); await loadEmployees(); });
 $('geofence-form').addEventListener('submit', async event => { event.preventDefault(); const { error } = await supabase.rpc('admin_create_geofence', { p_name: $('geofence-name').value.trim(), p_latitude: $('geofence-latitude').value, p_longitude: $('geofence-longitude').value, p_radius_meters: $('geofence-radius').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Geocerca salva.'); await loadGeofences(); });
 $('department-form').addEventListener('submit', saveDepartment);
 $('position-form').addEventListener('submit', savePosition);
