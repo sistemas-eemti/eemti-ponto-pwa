@@ -19,6 +19,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   12. `20260813_022_admin_manual_punch.sql`
   13. `20260813_023_admin_employee_details.sql`
   14. `20260813_024_fix_punch_message_null.sql`
+  15. `20260813_025_employee_punch_history.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)
@@ -60,6 +61,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 - [ ] Com "Mensagem ao funcionário" preenchida em Opções: a mensagem aparece abaixo da confirmação da batida (Mobile e Quiosque).
 - [ ] Batida dentro da geocerca: sem aviso (ou "Dentro").
 - [ ] Batida fora da geocerca: registrada com aviso "Fora da cerca" (e mensagem).
+- [ ] Mobile: "Minhas marcações" exige matrícula e PIN e mostra somente as últimas batidas do próprio funcionário.
 - [ ] PIN errado: mensagem de erro, sem registrar.
 - [ ] Matrícula inexistente: mensagem de erro.
 - [ ] Segunda batida imediata: "Batida repetida..." sem duplicar.

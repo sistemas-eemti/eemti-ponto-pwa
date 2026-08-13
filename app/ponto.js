@@ -42,6 +42,13 @@ async function api(payload) {
   return result;
 }
 
+async function punchHistory(matricula, pin, channel) {
+  const result = await api({ action: 'history', enrollment: normalizarMatricula(matricula), deviceId: await deviceId(channel), credential: { pin: pin || null, token: await tokenFor(channel, matricula) } });
+  if (!result.ok) throw new Error(result.message || 'Falha ao consultar marcações.');
+  if (result.token) await saveToken(channel, matricula, result.token);
+  return result;
+}
+
 async function syncFor(channel, matricula, credential) {
   if (!navigator.onLine) return { offline: true };
   const mat = normalizarMatricula(matricula);

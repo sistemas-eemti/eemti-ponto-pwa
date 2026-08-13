@@ -62,6 +62,23 @@ async function syncPending() {
   status();
 }
 
+async function showHistory() {
+  const matricula = $('matricula').value.trim();
+  const pin = $('pin').value.trim();
+  if (!matricula || !pin) return feedback('error', 'Informe matrícula e PIN para consultar suas marcações.');
+  const button = $('history-button');
+  button.disabled = true;
+  try {
+    const result = await punchHistory(matricula, pin, channel);
+    const rows = result.rows || [];
+    $('history').hidden = false;
+    $('history').innerHTML = `<strong>${escapeText(result.name || 'Minhas marcações')}</strong>${rows.map(row => `<div class="history-row"><span>${escapeText(row.captured_at)}</span><span>${escapeText(row.origin || '-')}</span></div>`).join('') || '<p>Nenhuma marcação encontrada.</p>'}`;
+    $('pin').value = '';
+    feedback('', '');
+  } catch (error) { feedback('error', error.message || 'Não foi possível consultar as marcações.'); }
+  button.disabled = false;
+}
+
 async function autoSync() {
   if (!navigator.onLine) return;
   const rows = await storeAll('queue');
@@ -76,6 +93,7 @@ window.addEventListener('offline', status);
 const themeToggle = $('theme-toggle'); if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 $('punch').addEventListener('click', punch);
 const syncButton = $('sync'); if (syncButton) syncButton.addEventListener('click', syncPending);
+const historyButton = $('history-button'); if (historyButton) historyButton.addEventListener('click', showHistory);
 if (channel === 'kiosk') {
   $('matricula').addEventListener('keydown', event => {
     if (event.key === 'Enter') { event.preventDefault(); $('pin').focus(); }

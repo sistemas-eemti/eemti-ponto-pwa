@@ -13,6 +13,14 @@ export default {
     if (request.method !== 'POST') return new Response(JSON.stringify({ ok: false, message: 'Método inválido.' }), { status: 405, headers });
     try {
       const body = await request.json();
+      if (body.action === 'history') {
+        const response = await fetch(env.SUPABASE_URL + '/rest/v1/rpc/employee_punch_history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY },
+          body: JSON.stringify({ p_enrollment: body.enrollment, p_device_id: body.deviceId, p_pin: body.credential?.pin || null, p_token: body.credential?.token || null })
+        });
+        return new Response(await response.text(), { status: response.ok ? 200 : 502, headers });
+      }
       if (body.action !== 'sync' || !body.record) return new Response(JSON.stringify({ ok: false, message: 'Requisição inválida.' }), { status: 400, headers });
        const record = body.record;
        const credential = body.credential || {};
