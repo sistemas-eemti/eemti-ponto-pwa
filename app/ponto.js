@@ -48,6 +48,7 @@ async function syncFor(channel, matricula, credential) {
   const rows = (await storeAll('queue')).filter(x => x.channel === channel && normalizarMatricula(x.matricula) === mat)
     .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
   let last = null;
+  let clearedDuplicate = false;
   let auth = credential || { token: await tokenFor(channel, matricula) };
   for (const item of rows) {
     try {
@@ -56,7 +57,8 @@ async function syncFor(channel, matricula, credential) {
       if (!result.ok) {
         if (result.message === 'Batida repetida. Aguarde um instante e tente de novo.') {
           await storeDelete('queue', item.id);
-          return { error: result.message };
+          clearedDuplicate = true;
+          continue;
         }
         item.error = result.message || 'Falha na sincronização.';
         await storePut('queue', item);
@@ -72,7 +74,7 @@ async function syncFor(channel, matricula, credential) {
       return { error: error?.message && error.message !== 'GATEWAY' ? error.message : 'Falha na comunicação com o servidor. Tente novamente.' };
     }
   }
-  return { last };
+  return { last, clearedDuplicate };
 }
 
 async function pendingCount(channel) {
