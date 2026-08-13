@@ -27,7 +27,7 @@ const supabase = {
   }
 };
 const $ = id => document.getElementById(id);
-const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas' };
+const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', offline: 'Monitor offline' };
 
 function message(text = '', error = false) { const el = $('app-message'); el.textContent = text; el.style.color = error ? 'var(--red)' : 'var(--green)'; }
 function optionList(id, rows, label) { $(id).innerHTML = '<option value="">Nenhum</option>' + rows.map(row => `<option value="${row.id}">${escapeHtml(row[label])}</option>`).join(''); }
@@ -106,7 +106,58 @@ async function loadGeofences() {
   $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge">${row.active ? 'Ativa' : 'Inativa'}</span></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
 }
 
-async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); }
+async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'offline') await loadOffline(); }
+
+function monthInput(id) { const value = new Date().toISOString().slice(0, 7); $(id).value = value; return value; }
+function todayInputs(startId, endId) { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); $(endId).value = end.toISOString().slice(0, 10); $(startId).value = start.toISOString().slice(0, 10); }
+
+async function loadEspelho() {
+  const { data, error } = await supabase.rpc('admin_list_employees'); if (error) throw error;
+  const select = $('espelho-employee');
+  select.innerHTML = data.map(row => `<option value="${escapeAttr(row.enrollment)}">${escapeHtml(row.name)}</option>`).join('') || '<option value="">Nenhum funcionário</option>';
+  monthInput('espelho-month');
+}
+
+function loadResumo() { monthInput('resumo-month'); }
+function loadAtrasos() { todayInputs('atrasos-start', 'atrasos-end'); }
+function loadFaltas() { todayInputs('faltas-start', 'faltas-end'); }
+
+async function runEspelho() {
+  const { data, error } = await supabase.rpc('admin_espelho', { p_enrollment: $('espelho-employee').value, p_month: $('espelho-month').value + '-01' });
+  if (error) { message(error.message, true); return; }
+  const rows = data.rows || [];
+  $('espelho-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.entrada)}</td><td>${escapeHtml(row.saida || '-')}</td><td>${hours(row.minutos)}</td><td>${row.batidas}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Sem batidas no período.</td></tr>';
+}
+
+async function runResumo() {
+  const { data, error } = await supabase.rpc('admin_resumo_mensal', { p_month: $('resumo-month').value + '-01' });
+  if (error) { message(error.message, true); return; }
+  const rows = data.rows || [];
+  $('resumo-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td>${row.dias_trabalhados}</td><td>${row.faltas}</td><td>${row.atrasos}</td><td>${hours(row.minutos_trabalhados)}</td><td>${hours(row.minutos_esperados)}</td><td class="${row.saldo_minutos < 0 ? 'danger' : ''}">${hours(row.saldo_minutos)}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Sem funcionários ativos.</td></tr>';
+}
+
+async function runAtrasos() {
+  const { data, error } = await supabase.rpc('admin_rel_atrasos', { p_start: $('atrasos-start').value, p_end: $('atrasos-end').value });
+  if (error) { message(error.message, true); return; }
+  const rows = data.rows || [];
+  $('atrasos-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.previsto)}</td><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.batida)}</td><td>${row.atraso_min} min</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum atraso no período.</td></tr>';
+}
+
+async function runFaltas() {
+  const { data, error } = await supabase.rpc('admin_rel_faltas', { p_start: $('faltas-start').value, p_end: $('faltas-end').value });
+  if (error) { message(error.message, true); return; }
+  const rows = data.rows || [];
+  $('faltas-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.dia)}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">Nenhuma falta no período.</td></tr>';
+}
+
+async function loadOffline() {
+  const { data, error } = await supabase.rpc('admin_monitor_offline'); if (error) throw error;
+  const rows = data.rows || [];
+  $('offline-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.origin)}</td><td>${escapeHtml(shortDateTime(row.captured_at))}</td><td>${escapeHtml(shortDateTime(row.synced_at))}</td><td>${escapeHtml(row.client_record_id || '-')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma batida offline registrada.</td></tr>';
+}
+
+function hours(minutes) { const m = Math.abs(minutes || 0); return `${minutes < 0 ? '-' : ''}${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`; }
+function shortDateTime(value) { if (!value) return '-'; return String(value).replace('T', ' ').slice(0, 16); }
 async function showPage(page) { document.querySelectorAll('.nav').forEach(el => el.classList.toggle('active', el.dataset.page === page)); document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === `${page}-page`)); $('page-title').textContent = pageTitles[page]; await loadPage(page); }
 
 async function login() {
@@ -134,6 +185,10 @@ $('geofence-form').addEventListener('submit', async event => { event.preventDefa
 $('department-form').addEventListener('submit', saveDepartment);
 $('position-form').addEventListener('submit', savePosition);
 $('schedule-form').addEventListener('submit', saveSchedule);
+$('espelho-run').addEventListener('click', runEspelho);
+$('resumo-run').addEventListener('click', runResumo);
+$('atrasos-run').addEventListener('click', runAtrasos);
+$('faltas-run').addEventListener('click', runFaltas);
 
 requireAdmin().then(isAdmin => {
   if (isAdmin) return showPage('dashboard');

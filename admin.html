@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#117437">
-  <link rel="stylesheet" href="app/admin.css?v=3">
+  <link rel="stylesheet" href="app/admin.css?v=4">
   <title>Administração | EEMTI Ponto</title>
 </head>
 <body>
@@ -33,6 +33,11 @@
         <button class="nav" data-page="positions">Cargos</button>
         <button class="nav" data-page="schedules">Jornadas</button>
         <button class="nav" data-page="geofences">Geocercas</button>
+        <button class="nav" data-page="espelho">Espelho de ponto</button>
+        <button class="nav" data-page="resumo">Resumo mensal</button>
+        <button class="nav" data-page="atrasos">Atrasos</button>
+        <button class="nav" data-page="faltas">Faltas</button>
+        <button class="nav" data-page="offline">Monitor offline</button>
       </nav>
       <div class="account"><strong id="account-name"></strong><button id="logout" class="link">Sair</button></div>
     </aside>
@@ -84,9 +89,29 @@
           <article class="panel"><h2>Geocercas cadastradas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Coordenadas</th><th>Raio</th><th>Status</th></tr></thead><tbody id="geofences-list"></tbody></table></div></article>
         </div>
       </section>
+
+      <section id="espelho-page" class="page">
+        <article class="panel"><h2>Espelho de ponto</h2><div class="row"><div><label>Funcionário<select id="espelho-employee"></select></label></div><div><label>Mês<input id="espelho-month" type="month"></label></div></div><button id="espelho-run" class="secondary">Gerar espelho</button><div class="table-wrap"><table><thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Horas</th><th>Batidas</th></tr></thead><tbody id="espelho-list"></tbody></table></div></article>
+      </section>
+
+      <section id="resumo-page" class="page">
+        <article class="panel"><h2>Resumo mensal</h2><div class="row"><div><label>Mês<input id="resumo-month" type="month"></label></div></div><button id="resumo-run" class="secondary">Gerar resumo</button><div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Depto</th><th>Trab.</th><th>Faltas</th><th>Atrasos</th><th>Horas trab.</th><th>Horas esper.</th><th>Saldo</th></tr></thead><tbody id="resumo-list"></tbody></table></div></article>
+      </section>
+
+      <section id="atrasos-page" class="page">
+        <article class="panel"><h2>Atrasos</h2><div class="row"><div><label>Início<input id="atrasos-start" type="date"></label></div><div><label>Fim<input id="atrasos-end" type="date"></label></div></div><button id="atrasos-run" class="secondary">Gerar relatório</button><div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Previsto</th><th>Data</th><th>Batida</th><th>Atraso</th></tr></thead><tbody id="atrasos-list"></tbody></table></div></article>
+      </section>
+
+      <section id="faltas-page" class="page">
+        <article class="panel"><h2>Faltas</h2><div class="row"><div><label>Início<input id="faltas-start" type="date"></label></div><div><label>Fim<input id="faltas-end" type="date"></label></div></div><button id="faltas-run" class="secondary">Gerar relatório</button><div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Data</th></tr></thead><tbody id="faltas-list"></tbody></table></div></article>
+      </section>
+
+      <section id="offline-page" class="page">
+        <article class="panel"><h2>Monitor offline</h2><p class="muted">Batidas capturadas sem conexão e sincronizadas depois.</p><div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Origem</th><th>Capturada em</th><th>Sincronizada em</th><th>Registro</th></tr></thead><tbody id="offline-list"></tbody></table></div></article>
+      </section>
     </section>
   </main>
   <script src="app/admin-config.js?v=1"></script>
-  <script src="app/admin.js?v=10"></script>
+  <script src="app/admin.js?v=11"></script>
 </body>
 </html>
