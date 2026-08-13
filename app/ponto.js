@@ -37,6 +37,7 @@ async function api(payload) {
   const text = await response.text();
   let result;
   try { result = JSON.parse(text); } catch (_) { throw new Error('GATEWAY'); }
+  if (!result || typeof result !== 'object') throw new Error('GATEWAY');
   if (!response.ok) throw new Error(result.message || 'GATEWAY');
   return result;
 }
@@ -51,6 +52,7 @@ async function syncFor(channel, matricula, credential) {
   for (const item of rows) {
     try {
       const result = await api({ action: 'sync', record: item, credential: auth });
+      if (!result || typeof result !== 'object') throw new Error('GATEWAY');
       if (!result.ok) {
         if (result.message === 'Batida repetida. Aguarde um instante e tente de novo.') {
           await storeDelete('queue', item.id);
