@@ -44,6 +44,7 @@
         <button class="nav" data-page="ocorrencias">Ocorrências</button>
         <button class="nav" data-page="offline">Monitor offline</button>
         <button class="nav" data-page="batidas">Batidas</button>
+        <button class="nav" data-page="manutencao">Manutenção de ponto</button>
         <button class="nav" data-page="holidays">Feriados</button>
         <button class="nav" data-page="motivos">Motivos</button>
         <button class="nav" data-page="profiles">Acessos</button>
@@ -153,6 +154,11 @@
         <article class="panel"><h2>Batidas</h2><p class="muted">Lista e exclui batidas registradas (a exclusão fica registrada em ajustes).</p><div class="row"><div><label>Início<input id="batidas-start" type="date"></label></div><div><label>Fim<input id="batidas-end" type="date"></label></div></div><div class="actions"><button id="batidas-run" class="secondary">Listar batidas</button><button id="batidas-print" class="secondary">Imprimir / PDF</button><button id="batidas-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="batidas-table"><thead><tr><th>Data/hora</th><th>Funcionário</th><th>Origem</th><th>Offline</th><th>Cerca</th><th>Dist.</th><th>Status</th><th>Ações</th></tr></thead><tbody id="batidas-list"></tbody></table></div></article>
       </section>
 
+      <section id="manutencao-page" class="page">
+        <article class="panel"><h2>Incluir batida manual</h2><p class="muted">Corrige esquecimento de batida. Fica registrado em ajustes como inclusão manual.</p><div class="row"><div><label>Matrícula ou CPF<input id="manut-enrollment" required></label></div><div><label>Data e hora<input id="manut-datetime" type="datetime-local" required></label></div><div><label>Motivo<input id="manut-reason" placeholder="Ex.: esqueceu de bater"></label></div></div><div class="actions"><button id="manut-save" class="secondary">Incluir batida</button></div></article>
+        <article class="panel"><h2>Batidas do funcionário</h2><div class="row"><div><label>Matrícula ou CPF<input id="manut-enrollment-list" required></label></div><div><label>De<input id="manut-start" type="date"></label></div><div><label>Até<input id="manut-end" type="date"></label></div></div><div class="actions"><button id="manut-run" class="secondary">Listar batidas</button><button id="manut-print" class="secondary">Imprimir / PDF</button><button id="manut-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="manut-table"><thead><tr><th>Data/hora</th><th>Funcionário</th><th>Origem</th><th>Offline</th><th>Cerca</th><th>Dist.</th><th>Status</th><th>Ações</th></tr></thead><tbody id="manut-list"></tbody></table></div></article>
+      </section>
+
       <section id="holidays-page" class="page">
         <div class="two-columns">
           <form id="holiday-form" class="panel"><h2>Novo feriado</h2><label>Data<input id="holiday-date" type="date" required></label><label>Descrição<input id="holiday-description" required></label><label>Tipo<select id="holiday-type"><option value="national">Nacional</option><option value="municipal">Municipal</option><option value="school">Escolar</option></select></label><button>Salvar feriado</button></form>
@@ -176,6 +182,6 @@
     </section>
   </main>
   <script src="app/admin-config.js?v=1"></script>
-  <script src="app/admin.js?v=15"></script>
+  <script src="app/admin.js?v=16"></script>
 </body>
 </html>

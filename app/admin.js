@@ -27,7 +27,7 @@ const supabase = {
   }
 };
 const $ = id => document.getElementById(id);
-const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', assiduidade: 'Assiduidade', 'fora-cerca': 'Fora da cerca', ausencias: 'Ausências', ocorrencias: 'Ocorrências', offline: 'Monitor offline', batidas: 'Batidas', holidays: 'Feriados', motivos: 'Motivos', profiles: 'Acessos', opcoes: 'Opções' };
+const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', assiduidade: 'Assiduidade', 'fora-cerca': 'Fora da cerca', ausencias: 'Ausências', ocorrencias: 'Ocorrências', offline: 'Monitor offline', batidas: 'Batidas', manutencao: 'Manutenção de ponto', holidays: 'Feriados', motivos: 'Motivos', profiles: 'Acessos', opcoes: 'Opções' };
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -146,7 +146,7 @@ async function loadGeofences() {
   $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge${row.active ? '' : ' off'}">${row.active ? 'Ativa' : 'Inativa'}</span></td><td>${actionButtons([{ label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-geofence', id: row.id, active: !row.active }, { label: 'Excluir', action: 'delete-geofence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
 }
 
-async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'assiduidade') await loadAssiduidade(); if (page === 'fora-cerca') await loadForaCerca(); if (page === 'ausencias') await loadAbsences(); if (page === 'ocorrencias') await loadOccurrences(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'motivos') await loadReasons(); if (page === 'profiles') await loadProfiles(); if (page === 'opcoes') await loadSettings(); }
+async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'assiduidade') await loadAssiduidade(); if (page === 'fora-cerca') await loadForaCerca(); if (page === 'ausencias') await loadAbsences(); if (page === 'ocorrencias') await loadOccurrences(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'manutencao') await loadManutencao(); if (page === 'holidays') await loadHolidays(); if (page === 'motivos') await loadReasons(); if (page === 'profiles') await loadProfiles(); if (page === 'opcoes') await loadSettings(); }
 
 function monthInput(id) { const value = new Date().toISOString().slice(0, 7); $(id).value = value; return value; }
 function todayInputs(startId, endId) { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); $(endId).value = end.toISOString().slice(0, 10); $(startId).value = start.toISOString().slice(0, 10); }
@@ -265,7 +265,35 @@ async function deletePunch(id) {
   if (!reason) return;
   const { error } = await supabase.rpc('admin_delete_punch', { p_id: id, p_reason: reason.trim() });
   if (error) { message(error.message, true); return; }
-  message('Batida excluída.'); await runBatidas();
+  message('Batida excluída.'); if ($('manutencao-page').classList.contains('active')) await runManutencao(); else await runBatidas();
+}
+
+function loadManutencao() {
+  todayInputs('manut-start', 'manut-end');
+  const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  $('manut-datetime').value = now.toISOString().slice(0, 16);
+}
+
+async function saveManualPunch() {
+  const { data, error } = await supabase.rpc('admin_add_manual_punch', {
+    p_enrollment: $('manut-enrollment').value.trim(),
+    p_captured_at: $('manut-datetime').value ? new Date($('manut-datetime').value).toISOString() : null,
+    p_reason: $('manut-reason').value.trim() || null
+  });
+  if (error) { message(error.message, true); return; }
+  message(data?.message || 'Batida manual incluída.');
+  $('manut-reason').value = ''; $('manut-enrollment').value = '';
+  if ($('manut-enrollment-list').value.trim()) await runManutencao();
+}
+
+async function runManutencao() {
+  const { data, error } = await supabase.rpc('admin_list_employee_punches', {
+    p_enrollment: $('manut-enrollment-list').value.trim(),
+    p_start: $('manut-start').value, p_end: $('manut-end').value
+  });
+  if (error) { message(error.message, true); return; }
+  const rows = data.rows || [];
+  $('manut-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.name)} (${escapeHtml(row.enrollment)})</td><td>${escapeHtml(row.origin)}</td><td>${row.captured_offline ? 'Sim' : 'Não'}</td><td>${row.inside_geofence === false ? 'Fora' : row.inside_geofence === true ? 'Dentro' : '-'}</td><td>${row.distance_meters != null ? `${row.distance_meters} m` : '-'}</td><td>${row.excluded ? '<span class="badge">Excluída</span>' : 'Ativa'}</td><td>${row.excluded ? '' : actionButtons([{ label: 'Excluir', action: 'delete-punch', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Nenhuma batida para este funcionário no período.</td></tr>';
 }
 
 async function loadAbsences() {
@@ -510,6 +538,8 @@ $('faltas-run').addEventListener('click', runFaltas);
 $('assiduidade-run').addEventListener('click', runAssiduidade);
 $('fora-cerca-run').addEventListener('click', runForaCerca);
 $('batidas-run').addEventListener('click', runBatidas);
+$('manut-save').addEventListener('click', saveManualPunch);
+$('manut-run').addEventListener('click', runManutencao);
 $('holiday-form').addEventListener('submit', saveHoliday);
 $('profile-form').addEventListener('submit', saveProfile);
 $('absence-form').addEventListener('submit', saveAbsence);
@@ -529,7 +559,8 @@ const reportButtons = [
   ['assiduidade-print', 'assiduidade-table', 'assiduidade'], ['assiduidade-csv', 'assiduidade-table', 'assiduidade'],
   ['fora-cerca-print', 'fora-cerca-table', 'fora-cerca'], ['fora-cerca-csv', 'fora-cerca-table', 'fora-cerca'],
   ['offline-print', 'offline-table', 'offline'], ['offline-csv', 'offline-table', 'offline'],
-  ['batidas-print', 'batidas-table', 'batidas'], ['batidas-csv', 'batidas-table', 'batidas']
+  ['batidas-print', 'batidas-table', 'batidas'], ['batidas-csv', 'batidas-table', 'batidas'],
+  ['manut-print', 'manut-table', 'manutencao'], ['manut-csv', 'manut-table', 'manutencao']
 ];
 reportButtons.forEach(([id, tableId, name]) => {
   $(id).addEventListener('click', () => {

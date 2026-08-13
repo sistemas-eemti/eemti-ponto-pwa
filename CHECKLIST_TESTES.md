@@ -16,6 +16,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   9. `20260813_019_admin_absences_reports.sql`
   10. `20260813_020_admin_outside_attendance.sql`
   11. `20260813_021_admin_occurrences_reasons_settings.sql`
+  12. `20260813_022_admin_manual_punch.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)
@@ -44,6 +45,9 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 - [ ] Motivos: cadastrar (descrição, categoria ajuste/falta/abono, ativo), editar, excluir, listar.
 - [ ] Opções: salvar mensagem ao funcionário, tolerância padrão e e-mail de alerta; conferir tabela "Parâmetros cadastrados".
 - [ ] Trocar minha senha: nova senha (6+ caracteres) e confirmação; sair e entrar com a nova senha.
+- [ ] Manutenção de ponto — Incluir batida manual: informar matrícula, data/hora e motivo; confirmar mensagem; batida aparece com origem `manual` (e "Ativa") na lista e em "Batidas".
+- [ ] Manutenção de ponto — Batidas do funcionário: filtrar por matrícula e período; lista vem só do funcionário; excluir com motivo registrado.
+- [ ] Ajustes (auditoria): após incluir/excluir batida, conferir na tabela `punch_adjustments` os registros `include`/`exclude` com quem fez.
 
 ## 3. Mobile — online
 
