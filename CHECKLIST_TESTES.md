@@ -18,6 +18,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   11. `20260813_021_admin_occurrences_reasons_settings.sql`
   12. `20260813_022_admin_manual_punch.sql`
   13. `20260813_023_admin_employee_details.sql`
+  14. `20260813_024_fix_punch_message_null.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)

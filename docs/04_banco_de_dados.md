@@ -34,6 +34,7 @@ Banco: **PostgreSQL (Supabase)**, schema `public`. Todas as migrations estão em
 | 021 | `20260813_021_admin_occurrences_reasons_settings.sql` | CRUD de ocorrências, motivos (`reasons`) e opções (`settings`); resumo por departamento; `aviso` na batida. |
 | 022 | `20260813_022_admin_manual_punch.sql` | Batida manual + lista de batidas por funcionário (manutenção de ponto). |
 | 023 | `20260813_023_admin_employee_details.sql` | Campos adicionais do funcionário (sexo, nascimento, salário, código de barras, endereço, CEP, telefones) e RPCs de salvar/listar completas. |
+| 024 | `20260813_024_fix_punch_message_null.sql` | Corrige retorno nulo da batida quando a mensagem ao funcionário está vazia. |
 
 ---
 
