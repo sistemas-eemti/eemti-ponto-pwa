@@ -67,7 +67,7 @@ async function syncFor(channel, matricula, credential) {
       item.offline = true;
       await storePut('queue', item);
       if (error && error.message === 'NETWORK') return { offline: true };
-      return { error: 'Falha na comunicação com o servidor. Verifique a configuração da API.' };
+      return { error: error?.message && error.message !== 'GATEWAY' ? error.message : 'Falha na comunicação com o servidor. Tente novamente.' };
     }
   }
   return { last };
