@@ -25,7 +25,7 @@ returns jsonb language sql security definer set search_path = public as $$
   select coalesce(jsonb_agg(row_to_json(x) order by x.occurrence_date desc, x.created_at desc), '[]'::jsonb) from (
     select o.id, e.enrollment, e.name,
            to_char(o.occurrence_date, 'DD/MM/YYYY') as occurrence_date,
-           o.type, o.description, o.recorded_by
+           o.type, o.description, o.recorded_by, o.created_at
     from public.occurrences o
     join public.employees e on e.id = o.employee_id
     where o.occurrence_date between p_start and p_end
