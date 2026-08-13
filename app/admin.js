@@ -32,7 +32,7 @@ const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', depa
 function message(text = '', error = false) { const el = $('app-message'); el.textContent = text; el.style.color = error ? 'var(--red)' : 'var(--green)'; }
 function optionList(id, rows, label) { $(id).innerHTML = '<option value="">Nenhum</option>' + rows.map(row => `<option value="${row.id}">${escapeHtml(row[label])}</option>`).join(''); }
 function escapeHtml(value) { const el = document.createElement('span'); el.textContent = value ?? ''; return el.innerHTML; }
-function actionButtons(cells) { return cells.map(cell => `<button class="mini" type="button" onclick="${cell.fn}">${cell.label}</button>`).join(''); }
+function actionButtons(cells) { return cells.map(cell => `<button class="mini" type="button" data-action="${cell.action}" data-id="${cell.id ?? ''}" data-name="${escapeAttr(cell.name ?? '')}" data-enrollment="${escapeAttr(cell.enrollment ?? '')}" data-active="${cell.active ?? ''}" data-date="${cell.date ?? ''}">${cell.label}</button>`).join(''); }
 function timeOnly(value) { return value ? value.slice(0, 5) : ''; }
 function todayRange() { const date = new Date(); date.setHours(0, 0, 0, 0); return date.toISOString(); }
 
@@ -49,30 +49,31 @@ async function requireAdmin() {
 async function loadDashboard() {
   const { data, error } = await supabase.rpc('admin_dashboard'); if (error) throw error;
   $('total-employees').textContent = data.employees || 0; $('today-punches').textContent = data.punches || 0; $('outside-punches').textContent = data.outside || 0; $('active-geofences').textContent = data.geofences || 0;
-  $('recent-punches').innerHTML = data.recent.map(row => `<tr><td>${new Date(row.captured_at).toLocaleString('pt-BR')}</td><td>${escapeHtml(row.name || '-')} ${row.enrollment ? `<span class="muted">${escapeHtml(row.enrollment)}</span>` : ''}</td><td>${escapeHtml(row.origin)}</td><td>${row.inside_geofence === false ? '<span class="badge">Fora da cerca</span>' : 'Dentro / não verificado'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhuma batida registrada.</td></tr>';
+  $('recent-punches').innerHTML = data.recent.map(row => `<tr><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.name || '-')} ${row.enrollment ? `<span class="muted">${escapeHtml(row.enrollment)}</span>` : ''}</td><td>${escapeHtml(row.origin)}</td><td>${row.inside_geofence === false ? '<span class="badge">Fora da cerca</span>' : 'Dentro / não verificado'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhuma batida registrada.</td></tr>';
 }
 
 async function loadEmployees() {
   const [employees, options] = await Promise.all([supabase.rpc('admin_list_employees'), supabase.rpc('admin_employee_options')]);
   if (employees.error) throw employees.error; if (options.error) throw options.error;
   optionList('employee-department', options.data.departments, 'name'); optionList('employee-position', options.data.positions, 'name'); optionList('employee-schedule', options.data.schedules, 'name');
-  $('employees-list').innerHTML = employees.data.map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: row.active ? 'Inativar' : 'Ativar', fn: `toggleEmployee('${escapeAttr(row.enrollment)}', ${!row.active})` }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum funcionário cadastrado.</td></tr>';
+  $('employees-list').dataset.rows = JSON.stringify(employees.data);
+  $('employees-list').innerHTML = employees.data.map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Editar', action: 'edit-employee', enrollment: row.enrollment }, { label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-employee', enrollment: row.enrollment, active: !row.active }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum funcionário cadastrado.</td></tr>';
 }
 
 async function loadDepartments() {
   const { data, error } = await supabase.rpc('admin_list_departments'); if (error) throw error;
-  $('departments-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.employees || 0}</td><td>${actionButtons([{ label: 'Editar', fn: `editDepartment('${row.id}','${escapeAttr(row.name)}')` }, { label: 'Excluir', fn: `deleteDepartment('${row.id}')` }])}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nenhum departamento cadastrado.</td></tr>';
+  $('departments-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.employees || 0}</td><td>${actionButtons([{ label: 'Editar', action: 'edit-department', id: row.id, name: row.name }, { label: 'Excluir', action: 'delete-department', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nenhum departamento cadastrado.</td></tr>';
 }
 
 async function loadPositions() {
   const { data, error } = await supabase.rpc('admin_list_positions'); if (error) throw error;
-  $('positions-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.employees || 0}</td><td>${actionButtons([{ label: 'Editar', fn: `editPosition('${row.id}','${escapeAttr(row.name)}')` }, { label: 'Excluir', fn: `deletePosition('${row.id}')` }])}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nenhum cargo cadastrado.</td></tr>';
+  $('positions-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.employees || 0}</td><td>${actionButtons([{ label: 'Editar', action: 'edit-position', id: row.id, name: row.name }, { label: 'Excluir', action: 'delete-position', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nenhum cargo cadastrado.</td></tr>';
 }
 
 async function loadSchedules() {
   const { data, error } = await supabase.rpc('admin_list_schedules'); if (error) throw error;
   $('schedules-list').dataset.rows = JSON.stringify(data);
-  $('schedules-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.entry_time ? escapeHtml(timeOnly(row.entry_time)) : '-'}</td><td>${row.exit_time ? escapeHtml(timeOnly(row.exit_time)) : '-'}</td><td>${row.daily_minutes} min</td><td>${row.tolerance_minutes} min</td><td>${actionButtons([{ label: 'Editar', fn: `editSchedule('${row.id}')` }, { label: 'Excluir', fn: `deleteSchedule('${row.id}')` }])}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Nenhuma jornada cadastrada.</td></tr>';
+  $('schedules-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.entry_time ? escapeHtml(timeOnly(row.entry_time)) : '-'}</td><td>${row.exit_time ? escapeHtml(timeOnly(row.exit_time)) : '-'}</td><td>${row.break_start ? `${escapeHtml(timeOnly(row.break_start))} - ${escapeHtml(timeOnly(row.break_end))}` : '-'}</td><td>${row.daily_minutes} min</td><td>${row.tolerance_minutes} min</td><td>${actionButtons([{ label: 'Editar', action: 'edit-schedule', id: row.id }, { label: 'Excluir', action: 'delete-schedule', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Nenhuma jornada cadastrada.</td></tr>';
 }
 
 function escapeAttr(value) { return escapeHtml(String(value ?? '').replace(/'/g, '\\')); }
@@ -85,6 +86,7 @@ function editSchedule(id) {
   if (!row) return;
   $('schedule-id').value = row.id; $('schedule-name').value = row.name;
   $('schedule-entry').value = timeOnly(row.entry_time); $('schedule-exit').value = timeOnly(row.exit_time);
+  $('schedule-break-start').value = timeOnly(row.break_start); $('schedule-break-end').value = timeOnly(row.break_end);
   $('schedule-minutes').value = row.daily_minutes; $('schedule-tolerance').value = row.tolerance_minutes;
 }
 
@@ -94,16 +96,44 @@ async function toggleEmployee(enrollment, active) {
   message(active ? 'Funcionário ativado.' : 'Funcionário inativado.'); await loadEmployees();
 }
 
+function editEmployee(enrollment) {
+  const rows = JSON.parse($('employees-list').dataset.rows || '[]');
+  const row = rows.find(item => item.enrollment === enrollment);
+  if (!row) return;
+  $('employee-enrollment').value = row.enrollment;
+  $('employee-name').value = row.name;
+  $('employee-pin').value = '';
+  $('employee-department').value = row.department_id || '';
+  $('employee-position').value = row.position_id || '';
+  $('employee-schedule').value = row.schedule_id || '';
+  message('Editando funcionário. Deixe o PIN em branco para manter o atual.');
+}
+
+function clearEmployee() { const form = $('employee-form'); form.reset(); message(''); }
+
+async function toggleGeofence(id, active) {
+  const { error } = await supabase.rpc('admin_set_geofence_active', { p_id: id, p_active: active });
+  if (error) { message(error.message, true); return; }
+  message(active ? 'Geocerca ativada.' : 'Geocerca inativada.'); await loadGeofences();
+}
+
+async function deleteGeofence(id) {
+  if (!confirm('Excluir esta geocerca?')) return;
+  const { error } = await supabase.rpc('admin_delete_geofence', { p_id: id });
+  if (error) { message(error.message, true); return; }
+  message('Geocerca excluída.'); await loadGeofences();
+}
+
 async function saveDepartment(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_department', { p_id: $('department-id').value || null, p_name: $('department-name').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Departamento salvo.'); await loadDepartments(); }
 async function savePosition(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_position', { p_id: $('position-id').value || null, p_name: $('position-name').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Cargo salvo.'); await loadPositions(); }
-async function saveSchedule(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_schedule', { p_id: $('schedule-id').value || null, p_name: $('schedule-name').value, p_entry_time: $('schedule-entry').value, p_exit_time: $('schedule-exit').value, p_daily_minutes: $('schedule-minutes').value, p_tolerance_minutes: $('schedule-tolerance').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Jornada salva.'); await loadSchedules(); }
+async function saveSchedule(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_schedule', { p_id: $('schedule-id').value || null, p_name: $('schedule-name').value, p_entry_time: $('schedule-entry').value, p_exit_time: $('schedule-exit').value, p_break_start: $('schedule-break-start').value, p_break_end: $('schedule-break-end').value, p_daily_minutes: $('schedule-minutes').value, p_tolerance_minutes: $('schedule-tolerance').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Jornada salva.'); await loadSchedules(); }
 async function deleteDepartment(id) { if (!confirm('Excluir este departamento?')) return; const { error } = await supabase.rpc('admin_delete_department', { p_id: id }); if (error) { message(error.message, true); return; } message('Departamento excluído.'); await loadDepartments(); }
 async function deletePosition(id) { if (!confirm('Excluir este cargo?')) return; const { error } = await supabase.rpc('admin_delete_position', { p_id: id }); if (error) { message(error.message, true); return; } message('Cargo excluído.'); await loadPositions(); }
 async function deleteSchedule(id) { if (!confirm('Excluir esta jornada?')) return; const { error } = await supabase.rpc('admin_delete_schedule', { p_id: id }); if (error) { message(error.message, true); return; } message('Jornada excluída.'); await loadSchedules(); }
 
 async function loadGeofences() {
   const { data, error } = await supabase.rpc('admin_list_geofences'); if (error) throw error;
-  $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge">${row.active ? 'Ativa' : 'Inativa'}</span></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
+  $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge">${row.active ? 'Ativa' : 'Inativa'}</span></td><td>${actionButtons([{ label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-geofence', id: row.id, active: !row.active }, { label: 'Excluir', action: 'delete-geofence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
 }
 
 async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'profiles') await loadProfiles(); }
@@ -126,7 +156,7 @@ async function runEspelho() {
   const { data, error } = await supabase.rpc('admin_espelho', { p_enrollment: $('espelho-employee').value, p_month: $('espelho-month').value + '-01' });
   if (error) { message(error.message, true); return; }
   const rows = data.rows || [];
-  $('espelho-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.entrada)}</td><td>${escapeHtml(row.saida || '-')}</td><td>${hours(row.minutos)}</td><td>${row.batidas}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Sem batidas no período.</td></tr>';
+  $('espelho-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.hora)}</td><td>${escapeHtml(row.entrada_prevista || '-')}</td><td>${escapeHtml(row.saida_prevista || '-')}</td><td>${escapeHtml(row.intervalo || '-')}</td><td>${escapeHtml(row.origin)}${row.captured_offline ? ' (offline)' : ''}</td><td>${escapeHtml(row.cerca)}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Sem batidas no período.</td></tr>';
 }
 
 async function runResumo() {
@@ -153,11 +183,10 @@ async function runFaltas() {
 async function loadOffline() {
   const { data, error } = await supabase.rpc('admin_monitor_offline'); if (error) throw error;
   const rows = data.rows || [];
-  $('offline-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.origin)}</td><td>${escapeHtml(shortDateTime(row.captured_at))}</td><td>${escapeHtml(shortDateTime(row.synced_at))}</td><td>${escapeHtml(row.client_record_id || '-')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma batida offline registrada.</td></tr>';
+  $('offline-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.origin)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.synced_at || '-')}</td><td>${escapeHtml(row.client_record_id || '-')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma batida offline registrada.</td></tr>';
 }
 
 function hours(minutes) { const m = Math.abs(minutes || 0); return `${minutes < 0 ? '-' : ''}${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`; }
-function shortDateTime(value) { if (!value) return '-'; return String(value).replace('T', ' ').slice(0, 16); }
 
 function loadBatidas() { todayInputs('batidas-start', 'batidas-end'); }
 
@@ -165,7 +194,7 @@ async function runBatidas() {
   const { data, error } = await supabase.rpc('admin_list_punches', { p_start: $('batidas-start').value, p_end: $('batidas-end').value });
   if (error) { message(error.message, true); return; }
   const rows = data.rows || [];
-  $('batidas-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.name)} (${escapeHtml(row.enrollment)})</td><td>${escapeHtml(row.origin)}</td><td>${row.captured_offline ? 'Sim' : 'Não'}</td><td>${row.inside_geofence === false ? 'Fora' : row.inside_geofence === true ? 'Dentro' : '-'}</td><td>${row.distance_meters != null ? `${row.distance_meters} m` : '-'}</td><td>${row.excluded ? '<span class="badge">Excluída</span>' : 'Ativa'}</td><td>${row.excluded ? '' : actionButtons([{ label: 'Excluir', fn: `deletePunch('${row.id}')` }])}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Nenhuma batida no período.</td></tr>';
+  $('batidas-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.name)} (${escapeHtml(row.enrollment)})</td><td>${escapeHtml(row.origin)}</td><td>${row.captured_offline ? 'Sim' : 'Não'}</td><td>${row.inside_geofence === false ? 'Fora' : row.inside_geofence === true ? 'Dentro' : '-'}</td><td>${row.distance_meters != null ? `${row.distance_meters} m` : '-'}</td><td>${row.excluded ? '<span class="badge">Excluída</span>' : 'Ativa'}</td><td>${row.excluded ? '' : actionButtons([{ label: 'Excluir', action: 'delete-punch', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Nenhuma batida no período.</td></tr>';
 }
 
 async function deletePunch(id) {
@@ -179,7 +208,7 @@ async function deletePunch(id) {
 async function loadHolidays() {
   const { data, error } = await supabase.rpc('admin_list_holidays'); if (error) throw error;
   const rows = data.rows || [];
-  $('holidays-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.holiday_date)}</td><td>${escapeHtml(row.description)}</td><td>${escapeHtml(row.type)}</td><td>${actionButtons([{ label: 'Excluir', fn: `deleteHoliday('${row.holiday_date}')` }])}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhum feriado cadastrado.</td></tr>';
+  $('holidays-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.holiday_date)}</td><td>${escapeHtml(row.description)}</td><td>${escapeHtml(row.type)}</td><td>${actionButtons([{ label: 'Excluir', action: 'delete-holiday', date: row.holiday_date }])}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhum feriado cadastrado.</td></tr>';
 }
 
 async function saveHoliday(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_holiday', { p_date: $('holiday-date').value, p_description: $('holiday-description').value, p_type: $('holiday-type').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Feriado salvo.'); await loadHolidays(); }
@@ -188,10 +217,33 @@ async function deleteHoliday(date) { if (!confirm('Excluir este feriado?')) retu
 async function loadProfiles() {
   const { data, error } = await supabase.rpc('admin_list_profiles'); if (error) throw error;
   const rows = data.rows || [];
-  $('profiles-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.email)}</td><td>${escapeHtml(row.display_name || '-')}</td><td>${escapeHtml(row.role === 'admin' ? 'Administrador' : 'Operador')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Remover', fn: `deleteProfile('${row.user_id}')` }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum acesso vinculado.</td></tr>';
+  $('profiles-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.email)}</td><td>${escapeHtml(row.display_name || '-')}</td><td>${escapeHtml(row.role === 'admin' ? 'Administrador' : 'Operador')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Remover', action: 'delete-profile', id: row.user_id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum acesso vinculado.</td></tr>';
 }
 
-async function saveProfile(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_profile', { p_user_email: $('profile-email').value.trim(), p_role: $('profile-role').value, p_display_name: $('profile-name').value.trim(), p_active: $('profile-active').checked }); if (error) { message(error.message, true); return; } event.target.reset(); message('Acesso salvo.'); await loadProfiles(); }
+async function signUpAccount(email, password) {
+  const result = await request(`${window.ADMIN_CONFIG.SUPABASE_URL}/auth/v1/signup`, {
+    method: 'POST',
+    headers: { apikey: window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  if (result.error && !JSON.stringify(result.error).toLowerCase().includes('already registered')) return result.error;
+  return null;
+}
+
+async function saveProfile(event) {
+  event.preventDefault();
+  const email = $('profile-email').value.trim();
+  const password = $('profile-password').value;
+  if (password) {
+    const signupError = await signUpAccount(email, password);
+    if (signupError) { message(signupError.msg || signupError.message || 'Não foi possível criar a conta.', true); return; }
+  }
+  const { error } = await supabase.rpc('admin_save_profile', { p_user_email: email, p_role: $('profile-role').value, p_display_name: $('profile-name').value.trim(), p_active: $('profile-active').checked });
+  if (error) { message(error.message, true); return; }
+  event.target.reset(); $('profile-active').checked = true;
+  message(password ? 'Conta criada e acesso salvo.' : 'Acesso salvo.');
+  await loadProfiles();
+}
 async function deleteProfile(userId) { if (!confirm('Remover este acesso?')) return; const { error } = await supabase.rpc('admin_delete_profile', { p_user_id: userId }); if (error) { message(error.message, true); return; } message('Acesso removido.'); await loadProfiles(); }
 
 function printReport() { window.print(); }
@@ -256,6 +308,30 @@ reportButtons.forEach(([id, tableId, name]) => {
     if (id.endsWith('-print')) printReport();
     else exportTable(tableId, `${name}-${new Date().toISOString().slice(0, 10)}.csv`);
   });
+});
+
+document.body.addEventListener('click', event => {
+  const btn = event.target.closest('[data-action]');
+  if (!btn || btn.disabled) return;
+  const d = btn.dataset;
+  const route = {
+    'edit-department': () => editDepartment(d.id, d.name),
+    'delete-department': () => deleteDepartment(d.id),
+    'edit-position': () => editPosition(d.id, d.name),
+    'delete-position': () => deletePosition(d.id),
+    'edit-schedule': () => editSchedule(d.id),
+    'delete-schedule': () => deleteSchedule(d.id),
+    'toggle-employee': () => toggleEmployee(d.enrollment, d.active === 'true'),
+    'edit-employee': () => editEmployee(d.enrollment),
+    'clear-employee': () => clearEmployee(),
+    'toggle-geofence': () => toggleGeofence(d.id, d.active === 'true'),
+    'delete-geofence': () => deleteGeofence(d.id),
+    'delete-holiday': () => deleteHoliday(d.date),
+    'delete-profile': () => deleteProfile(d.id),
+    'delete-punch': () => deletePunch(d.id)
+  };
+  const handler = route[btn.dataset.action];
+  if (handler) Promise.resolve(handler()).catch(error => message(error.message, true));
 });
 
 requireAdmin().then(isAdmin => {

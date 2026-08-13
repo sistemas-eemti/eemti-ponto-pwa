@@ -10,6 +10,9 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   3. `20260813_013_admin_holidays_rpcs.sql`
   4. `20260813_014_admin_punches_rpcs.sql`
   5. `20260813_015_admin_profiles_rpcs.sql`
+  6. `20260813_016_admin_geofence_employee_fixes.sql`
+  7. `20260813_017_admin_report_fixes.sql`
+  8. `20260813_018_admin_schedule_break.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)
@@ -25,12 +28,13 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 
 - [ ] Departamentos: criar, editar, listar (coluna "Funcionários" atualiza), excluir.
 - [ ] Cargos: criar, editar, listar, excluir.
-- [ ] Jornadas: criar (nome, entrada, saída, carga diária, tolerância), editar, excluir.
+- [ ] Jornadas: criar (nome, entrada, saída, **intervalo**, carga diária, tolerância), editar, excluir.
 - [ ] Funcionário: cadastrar com matrícula, nome, PIN, departamento, cargo e jornada.
+- [ ] **Editar funcionário**: clicar "Editar" preenche o formulário; salvar sem PIN mantém o PIN atual; alterar PIN troca o PIN.
 - [ ] Ativar/inativar funcionário pela coluna "Ações".
-- [ ] Geocercas: criar com nome, latitude, longitude, raio; listar; status.
+- [ ] Geocercas: criar com nome, latitude, longitude, raio; listar; **inativar/ativar; excluir**.
 - [ ] Feriados: criar (data, descrição, tipo), listar, excluir.
-- [ ] Acessos: vincular outro e-mail do Supabase Auth como operador; listar; remover.
+- [ ] Acessos: vincular outro e-mail; **criar a conta direto do Admin informando senha inicial**; listar; remover.
 - [ ] Acessos: tentar inativar/alterar o próprio acesso → bloqueado.
 
 ## 3. Mobile — online
@@ -61,11 +65,12 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 
 ## 6. Relatórios (Admin)
 
-- [ ] Espelho de ponto: selecionar funcionário + mês → dias, entradas, saídas, horas.
+- [ ] Espelho de ponto: **lista TODAS as batidas do mês** (data, hora, entrada/saída previstas, **intervalo da jornada**, origem, dentro/fora da cerca).
 - [ ] Resumo mensal: dias trabalhados, faltas, atrasos, horas trabalhadas/esperadas e saldo por funcionário.
 - [ ] Atrasos: período → só registros após entrada + tolerância, com minutos de atraso.
 - [ ] Faltas: período → dias úteis sem batida (feriados cadastrados não contam).
-- [ ] Monitor offline: lista apenas batidas capturadas sem conexão.
+- [ ] Monitor offline: lista apenas batidas capturadas sem conexão, **com horário local correto (fuso Fortaleza)**.
+- [ ] Dashboard: "Últimas batidas" com horário local correto.
 - [ ] Batidas: listar por período; excluir uma batida com motivo; confirmar que aparece "Excluída".
 - [ ] Exportar: "Exportar CSV" baixa arquivo com os dados da tabela atual.
 - [ ] Imprimir/PDF: abre impressão mostrando somente o relatório (sem menu).

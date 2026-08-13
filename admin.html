@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#117437">
-  <link rel="stylesheet" href="app/admin.css?v=5">
+  <link rel="stylesheet" href="app/admin.css?v=6">
   <title>Administração | EEMTI Ponto</title>
 </head>
 <body>
@@ -60,7 +60,7 @@
 
       <section id="employees-page" class="page">
         <div class="two-columns">
-          <form id="employee-form" class="panel"><h2>Cadastrar funcionário</h2><label>Matrícula<input id="employee-enrollment" required></label><label>Nome<input id="employee-name" required></label><label>PIN inicial<input id="employee-pin" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" required></label><label>Departamento<select id="employee-department"></select></label><label>Cargo<select id="employee-position"></select></label><label>Jornada<select id="employee-schedule"></select></label><button>Salvar funcionário</button></form>
+          <form id="employee-form" class="panel"><h2>Cadastrar / editar funcionário</h2><label>Matrícula<input id="employee-enrollment" required></label><label>Nome<input id="employee-name" required></label><label>PIN<input id="employee-pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Deixe em branco para manter"></label><label>Departamento<select id="employee-department"></select></label><label>Cargo<select id="employee-position"></select></label><label>Jornada<select id="employee-schedule"></select></label><div class="actions"><button>Salvar funcionário</button><button type="button" class="mini" data-action="clear-employee">Limpar</button></div></form>
           <article class="panel"><h2>Funcionários cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Departamento</th><th>Status</th><th>Ações</th></tr></thead><tbody id="employees-list"></tbody></table></div></article>
         </div>
       </section>
@@ -81,20 +81,20 @@
 
       <section id="schedules-page" class="page">
         <div class="two-columns">
-          <form id="schedule-form" class="panel"><h2>Nova jornada</h2><input type="hidden" id="schedule-id"><label>Nome<input id="schedule-name" required></label><div class="row"><div><label>Entrada<input id="schedule-entry" type="time"></label></div><div><label>Saída<input id="schedule-exit" type="time"></label></div></div><div class="row"><div><label>Carga diária (min)<input id="schedule-minutes" type="number" min="0" value="480"></label></div><div><label>Tolerância (min)<input id="schedule-tolerance" type="number" min="0" value="10"></label></div></div><button>Salvar jornada</button></form>
-          <article class="panel"><h2>Jornadas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Entrada</th><th>Saída</th><th>Carga</th><th>Tolerância</th><th>Ações</th></tr></thead><tbody id="schedules-list"></tbody></table></div></article>
+          <form id="schedule-form" class="panel"><h2>Nova jornada</h2><input type="hidden" id="schedule-id"><label>Nome<input id="schedule-name" required></label><div class="row"><div><label>Entrada<input id="schedule-entry" type="time"></label></div><div><label>Saída<input id="schedule-exit" type="time"></label></div></div><div class="row"><div><label>Intervalo — início<input id="schedule-break-start" type="time"></label></div><div><label>Intervalo — fim<input id="schedule-break-end" type="time"></label></div></div><div class="row"><div><label>Carga diária (min)<input id="schedule-minutes" type="number" min="0" value="480"></label></div><div><label>Tolerância (min)<input id="schedule-tolerance" type="number" min="0" value="10"></label></div></div><button>Salvar jornada</button></form>
+          <article class="panel"><h2>Jornadas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Entrada</th><th>Saída</th><th>Intervalo</th><th>Carga</th><th>Tolerância</th><th>Ações</th></tr></thead><tbody id="schedules-list"></tbody></table></div></article>
         </div>
       </section>
 
       <section id="geofences-page" class="page">
         <div class="two-columns">
           <form id="geofence-form" class="panel"><h2>Nova geocerca</h2><label>Nome<input id="geofence-name" required></label><label>Latitude<input id="geofence-latitude" type="number" step="0.0000001" required></label><label>Longitude<input id="geofence-longitude" type="number" step="0.0000001" required></label><label>Raio em metros<input id="geofence-radius" type="number" min="1" required></label><button>Salvar geocerca</button></form>
-          <article class="panel"><h2>Geocercas cadastradas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Coordenadas</th><th>Raio</th><th>Status</th></tr></thead><tbody id="geofences-list"></tbody></table></div></article>
+          <article class="panel"><h2>Geocercas cadastradas</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Coordenadas</th><th>Raio</th><th>Status</th><th>Ações</th></tr></thead><tbody id="geofences-list"></tbody></table></div></article>
         </div>
       </section>
 
       <section id="espelho-page" class="page">
-        <article class="panel"><h2>Espelho de ponto</h2><div class="row"><div><label>Funcionário<select id="espelho-employee"></select></label></div><div><label>Mês<input id="espelho-month" type="month"></label></div></div><div class="actions"><button id="espelho-run" class="secondary">Gerar espelho</button><button id="espelho-print" class="secondary">Imprimir / PDF</button><button id="espelho-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="espelho-table"><thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Horas</th><th>Batidas</th></tr></thead><tbody id="espelho-list"></tbody></table></div></article>
+        <article class="panel"><h2>Espelho de ponto</h2><div class="row"><div><label>Funcionário<select id="espelho-employee"></select></label></div><div><label>Mês<input id="espelho-month" type="month"></label></div></div><div class="actions"><button id="espelho-run" class="secondary">Gerar espelho</button><button id="espelho-print" class="secondary">Imprimir / PDF</button><button id="espelho-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="espelho-table"><thead><tr><th>Data</th><th>Hora</th><th>Entrada prev.</th><th>Saída prev.</th><th>Intervalo</th><th>Origem</th><th>Cerca</th></tr></thead><tbody id="espelho-list"></tbody></table></div></article>
       </section>
 
       <section id="resumo-page" class="page">
@@ -126,13 +126,13 @@
 
       <section id="profiles-page" class="page">
         <div class="two-columns">
-          <form id="profile-form" class="panel"><h2>Vincular acesso</h2><label>E-mail do Supabase Auth<input id="profile-email" type="email" required></label><div class="row"><div><label>Perfil<select id="profile-role"><option value="admin">Administrador</option><option value="operator">Operador</option></select></label></div><div><label>Nome de exibição<input id="profile-name"></label></div></div><label class="check"><input id="profile-active" type="checkbox" checked> Acesso ativo</label><button>Salvar acesso</button></form>
+          <form id="profile-form" class="panel"><h2>Vincular acesso</h2><label>E-mail<input id="profile-email" type="email" required></label><label>Senha inicial (cria a conta no Supabase Auth, se não existir)<input id="profile-password" type="password" autocomplete="new-password"></label><div class="row"><div><label>Perfil<select id="profile-role"><option value="admin">Administrador</option><option value="operator">Operador</option></select></label></div><div><label>Nome de exibição<input id="profile-name"></label></div></div><label class="check"><input id="profile-active" type="checkbox" checked> Acesso ativo</label><button>Salvar acesso</button></form>
           <article class="panel"><h2>Acessos</h2><div class="table-wrap"><table><thead><tr><th>E-mail</th><th>Nome</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead><tbody id="profiles-list"></tbody></table></div></article>
         </div>
       </section>
     </section>
   </main>
   <script src="app/admin-config.js?v=1"></script>
-  <script src="app/admin.js?v=12"></script>
+  <script src="app/admin.js?v=13"></script>
 </body>
 </html>
