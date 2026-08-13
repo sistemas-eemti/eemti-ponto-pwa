@@ -6,7 +6,7 @@ function escapeText(value) { const el = document.createElement('span'); el.textC
 
 let successFeedbackTimer;
 function feedback(kind, text) { const el = $('feedback'); el.className = 'feedback ' + kind; el.textContent = text; }
-function clearSuccessFeedback() { clearTimeout(successFeedbackTimer); successFeedbackTimer = setTimeout(() => { const el = $('feedback'); if (el.classList.contains('ok') || el.classList.contains('warn')) feedback('', ''); }, 5000); }
+function clearSuccessFeedback() { clearTimeout(successFeedbackTimer); successFeedbackTimer = setTimeout(() => { const el = $('feedback'); if (el.classList.contains('ok') || el.classList.contains('warn')) feedback('', ''); }, 2000); }
 function atualizarRelogio() { const now = new Date(); $('clock').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); $('date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
 
 function applyTheme(theme) {
