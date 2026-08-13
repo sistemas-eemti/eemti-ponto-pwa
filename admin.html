@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#117437">
-  <link rel="stylesheet" href="app/admin.css?v=6">
+  <link rel="stylesheet" href="app/admin.css?v=7">
   <title>Administração | EEMTI Ponto</title>
 </head>
 <body>
@@ -37,6 +37,9 @@
         <button class="nav" data-page="resumo">Resumo mensal</button>
         <button class="nav" data-page="atrasos">Atrasos</button>
         <button class="nav" data-page="faltas">Faltas</button>
+        <button class="nav" data-page="assiduidade">Assiduidade</button>
+        <button class="nav" data-page="fora-cerca">Fora da cerca</button>
+        <button class="nav" data-page="ausencias">Ausências</button>
         <button class="nav" data-page="offline">Monitor offline</button>
         <button class="nav" data-page="batidas">Batidas</button>
         <button class="nav" data-page="holidays">Feriados</button>
@@ -98,15 +101,30 @@
       </section>
 
       <section id="resumo-page" class="page">
-        <article class="panel"><h2>Resumo mensal</h2><div class="row"><div><label>Mês<input id="resumo-month" type="month"></label></div></div><div class="actions"><button id="resumo-run" class="secondary">Gerar resumo</button><button id="resumo-print" class="secondary">Imprimir / PDF</button><button id="resumo-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="resumo-table"><thead><tr><th>Funcionário</th><th>Depto</th><th>Trab.</th><th>Faltas</th><th>Atrasos</th><th>Horas trab.</th><th>Horas esper.</th><th>Saldo</th></tr></thead><tbody id="resumo-list"></tbody></table></div></article>
+        <article class="panel"><h2>Resumo mensal</h2><div class="row"><div><label>Mês<input id="resumo-month" type="month"></label></div></div><div class="actions"><button id="resumo-run" class="secondary">Gerar resumo</button><button id="resumo-print" class="secondary">Imprimir / PDF</button><button id="resumo-csv" class="secondary">Exportar CSV</button></div><div id="resumo-kpis" class="kpis"></div><div class="table-wrap"><table id="resumo-table"><thead><tr><th>Funcionário</th><th>Depto</th><th>Trab.</th><th>Faltas</th><th>Atrasos</th><th>Horas trab.</th><th>Horas esper.</th><th>Saldo</th></tr></thead><tbody id="resumo-list"></tbody></table></div></article>
       </section>
 
       <section id="atrasos-page" class="page">
-        <article class="panel"><h2>Atrasos</h2><div class="row"><div><label>Início<input id="atrasos-start" type="date"></label></div><div><label>Fim<input id="atrasos-end" type="date"></label></div></div><div class="actions"><button id="atrasos-run" class="secondary">Gerar relatório</button><button id="atrasos-print" class="secondary">Imprimir / PDF</button><button id="atrasos-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="atrasos-table"><thead><tr><th>Funcionário</th><th>Previsto</th><th>Data</th><th>Batida</th><th>Atraso</th></tr></thead><tbody id="atrasos-list"></tbody></table></div></article>
+        <article class="panel"><h2>Atrasos</h2><div class="row"><div><label>Início<input id="atrasos-start" type="date"></label></div><div><label>Fim<input id="atrasos-end" type="date"></label></div></div><div class="actions"><button id="atrasos-run" class="secondary">Gerar relatório</button><button id="atrasos-print" class="secondary">Imprimir / PDF</button><button id="atrasos-csv" class="secondary">Exportar CSV</button></div><div id="atrasos-kpis" class="kpis"></div><h2>Resumo por funcionário</h2><div class="table-wrap"><table id="atrasos-func-table"><thead><tr><th>Matrícula</th><th>Nome</th><th>Departamento</th><th>Dias com atraso</th><th>Minutos perdidos</th></tr></thead><tbody id="atrasos-func-list"></tbody></table></div><h2>Atrasos no período</h2><div class="table-wrap"><table id="atrasos-table"><thead><tr><th>Funcionário</th><th>Previsto</th><th>Data</th><th>Batida</th><th>Atraso</th></tr></thead><tbody id="atrasos-list"></tbody></table></div></article>
       </section>
 
       <section id="faltas-page" class="page">
-        <article class="panel"><h2>Faltas</h2><div class="row"><div><label>Início<input id="faltas-start" type="date"></label></div><div><label>Fim<input id="faltas-end" type="date"></label></div></div><div class="actions"><button id="faltas-run" class="secondary">Gerar relatório</button><button id="faltas-print" class="secondary">Imprimir / PDF</button><button id="faltas-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="faltas-table"><thead><tr><th>Funcionário</th><th>Data</th></tr></thead><tbody id="faltas-list"></tbody></table></div></article>
+        <article class="panel"><h2>Faltas</h2><div class="row"><div><label>Início<input id="faltas-start" type="date"></label></div><div><label>Fim<input id="faltas-end" type="date"></label></div></div><div class="actions"><button id="faltas-run" class="secondary">Gerar relatório</button><button id="faltas-print" class="secondary">Imprimir / PDF</button><button id="faltas-csv" class="secondary">Exportar CSV</button></div><div id="faltas-kpis" class="kpis"></div><h2>Resumo por funcionário</h2><div class="table-wrap"><table id="faltas-func-table"><thead><tr><th>Matrícula</th><th>Nome</th><th>Faltas</th><th>Abonadas</th><th>Não abonadas</th></tr></thead><tbody id="faltas-func-list"></tbody></table></div><h2>Faltas no período</h2><div class="table-wrap"><table id="faltas-table"><thead><tr><th>Data</th><th>Matrícula</th><th>Nome</th><th>Tipo</th><th>Situação</th></tr></thead><tbody id="faltas-list"></tbody></table></div></article>
+      </section>
+
+      <section id="assiduidade-page" class="page">
+        <article class="panel"><h2>Assiduidade</h2><div class="row"><div><label>Funcionário<select id="assiduidade-employee"></select></label></div><div><label>Início<input id="assiduidade-start" type="date"></label></div><div><label>Fim<input id="assiduidade-end" type="date"></label></div></div><div class="actions"><button id="assiduidade-run" class="secondary">Gerar</button><button id="assiduidade-print" class="secondary">Imprimir / PDF</button><button id="assiduidade-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="assiduidade-table"><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody id="assiduidade-list"></tbody></table></div></article>
+      </section>
+
+      <section id="fora-cerca-page" class="page">
+        <article class="panel"><h2>Batidas fora da cerca</h2><div class="row"><div><label>Início<input id="fora-cerca-start" type="date"></label></div><div><label>Fim<input id="fora-cerca-end" type="date"></label></div></div><div class="actions"><button id="fora-cerca-run" class="secondary">Gerar relatório</button><button id="fora-cerca-print" class="secondary">Imprimir / PDF</button><button id="fora-cerca-csv" class="secondary">Exportar CSV</button></div><div id="fora-cerca-kpis" class="kpis"></div><h2>Resumo por funcionário</h2><div class="table-wrap"><table id="fora-cerca-func-table"><thead><tr><th>Matrícula</th><th>Nome</th><th>Batidas fora</th></tr></thead><tbody id="fora-cerca-func-list"></tbody></table></div><h2>Batidas fora no período</h2><div class="table-wrap"><table id="fora-cerca-table"><thead><tr><th>Data</th><th>Hora</th><th>Matrícula</th><th>Nome</th><th>Origem</th><th>Distância</th></tr></thead><tbody id="fora-cerca-list"></tbody></table></div></article>
+      </section>
+
+      <section id="ausencias-page" class="page">
+        <div class="two-columns">
+          <form id="absence-form" class="panel"><h2>Registrar ausência</h2><input type="hidden" id="absence-id"><label>Matrícula ou CPF<input id="absence-enrollment" required></label><label>Data<input id="absence-date" type="date" required></label><label>Tipo<select id="absence-type"><option value="falta">Falta</option><option value="atestado">Atestado</option><option value="férias">Férias</option><option value="folga">Folga</option></select></label><label class="check"><input id="absence-excused" type="checkbox"> Abonada</label><label>Motivo<input id="absence-reason"></label><button>Salvar ausência</button><button type="button" class="mini" data-action="clear-absence">Novo / limpar</button></form>
+          <article class="panel"><h2>Ausências registradas</h2><div class="table-wrap"><table><thead><tr><th>Data</th><th>Matrícula</th><th>Nome</th><th>Tipo</th><th>Abonada</th><th>Motivo</th><th>Ações</th></tr></thead><tbody id="absences-list"></tbody></table></div></article>
+        </div>
       </section>
 
       <section id="offline-page" class="page">
@@ -133,6 +151,6 @@
     </section>
   </main>
   <script src="app/admin-config.js?v=1"></script>
-  <script src="app/admin.js?v=13"></script>
+  <script src="app/admin.js?v=14"></script>
 </body>
 </html>

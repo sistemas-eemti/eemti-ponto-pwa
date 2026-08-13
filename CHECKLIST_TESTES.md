@@ -13,6 +13,8 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   6. `20260813_016_admin_geofence_employee_fixes.sql`
   7. `20260813_017_admin_report_fixes.sql`
   8. `20260813_018_admin_schedule_break.sql`
+  9. `20260813_019_admin_absences_reports.sql`
+  10. `20260813_020_admin_outside_attendance.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)
@@ -36,6 +38,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 - [ ] Feriados: criar (data, descrição, tipo), listar, excluir.
 - [ ] Acessos: vincular outro e-mail; **criar a conta direto do Admin informando senha inicial**; listar; remover.
 - [ ] Acessos: tentar inativar/alterar o próprio acesso → bloqueado.
+- [ ] Ausências: registrar falta/atestado/férias/folga (data, tipo, abonada, motivo), editar, excluir, listar.
 
 ## 3. Mobile — online
 
@@ -66,9 +69,11 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 ## 6. Relatórios (Admin)
 
 - [ ] Espelho de ponto: **lista TODAS as batidas do mês** (data, hora, entrada/saída previstas, **intervalo da jornada**, origem, dentro/fora da cerca).
-- [ ] Resumo mensal: dias trabalhados, faltas, atrasos, horas trabalhadas/esperadas e saldo por funcionário.
-- [ ] Atrasos: período → só registros após entrada + tolerância, com minutos de atraso.
-- [ ] Faltas: período → dias úteis sem batida (feriados cadastrados não contam).
+- [ ] Resumo mensal: dias trabalhados, faltas, atrasos, horas trabalhadas/esperadas e saldo por funcionário + KPIs (funcionários, dias úteis, faltas, atrasos).
+- [ ] Atrasos: período → KPIs (funcionários com atraso, total, minutos) + resumo por funcionário + lista com minutos de atraso.
+- [ ] Faltas: período → KPIs (faltas, abonadas, não abonadas, funcionários) + resumo por funcionário + lista (automáticas e registradas).
+- [ ] Assiduidade: escolher funcionário e período → dias úteis, dias trabalhados, faltas, atrasos, total trabalhado, esperado e saldo.
+- [ ] Fora da cerca: período → KPIs + resumo por funcionário + lista de batidas fora (data, hora, origem, distância).
 - [ ] Monitor offline: lista apenas batidas capturadas sem conexão, **com horário local correto (fuso Fortaleza)**.
 - [ ] Dashboard: "Últimas batidas" com horário local correto.
 - [ ] Batidas: listar por período; excluir uma batida com motivo; confirmar que aparece "Excluída".

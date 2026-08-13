@@ -27,7 +27,7 @@ const supabase = {
   }
 };
 const $ = id => document.getElementById(id);
-const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', offline: 'Monitor offline', batidas: 'Batidas', holidays: 'Feriados', profiles: 'Acessos' };
+const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', assiduidade: 'Assiduidade', 'fora-cerca': 'Fora da cerca', ausencias: 'Ausências', offline: 'Monitor offline', batidas: 'Batidas', holidays: 'Feriados', profiles: 'Acessos' };
 
 function message(text = '', error = false) { const el = $('app-message'); el.textContent = text; el.style.color = error ? 'var(--red)' : 'var(--green)'; }
 function optionList(id, rows, label) { $(id).innerHTML = '<option value="">Nenhum</option>' + rows.map(row => `<option value="${row.id}">${escapeHtml(row[label])}</option>`).join(''); }
@@ -57,7 +57,7 @@ async function loadEmployees() {
   if (employees.error) throw employees.error; if (options.error) throw options.error;
   optionList('employee-department', options.data.departments, 'name'); optionList('employee-position', options.data.positions, 'name'); optionList('employee-schedule', options.data.schedules, 'name');
   $('employees-list').dataset.rows = JSON.stringify(employees.data);
-  $('employees-list').innerHTML = employees.data.map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Editar', action: 'edit-employee', enrollment: row.enrollment }, { label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-employee', enrollment: row.enrollment, active: !row.active }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum funcionário cadastrado.</td></tr>';
+  $('employees-list').innerHTML = employees.data.map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td><span class="badge${row.active ? '' : ' off'}">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Editar', action: 'edit-employee', enrollment: row.enrollment }, { label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-employee', enrollment: row.enrollment, active: !row.active }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum funcionário cadastrado.</td></tr>';
 }
 
 async function loadDepartments() {
@@ -133,10 +133,10 @@ async function deleteSchedule(id) { if (!confirm('Excluir esta jornada?')) retur
 
 async function loadGeofences() {
   const { data, error } = await supabase.rpc('admin_list_geofences'); if (error) throw error;
-  $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge">${row.active ? 'Ativa' : 'Inativa'}</span></td><td>${actionButtons([{ label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-geofence', id: row.id, active: !row.active }, { label: 'Excluir', action: 'delete-geofence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
+  $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge${row.active ? '' : ' off'}">${row.active ? 'Ativa' : 'Inativa'}</span></td><td>${actionButtons([{ label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-geofence', id: row.id, active: !row.active }, { label: 'Excluir', action: 'delete-geofence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
 }
 
-async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'profiles') await loadProfiles(); }
+async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'assiduidade') await loadAssiduidade(); if (page === 'fora-cerca') await loadForaCerca(); if (page === 'ausencias') await loadAbsences(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'profiles') await loadProfiles(); }
 
 function monthInput(id) { const value = new Date().toISOString().slice(0, 7); $(id).value = value; return value; }
 function todayInputs(startId, endId) { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); $(endId).value = end.toISOString().slice(0, 10); $(startId).value = start.toISOString().slice(0, 10); }
@@ -152,6 +152,14 @@ function loadResumo() { monthInput('resumo-month'); }
 function loadAtrasos() { todayInputs('atrasos-start', 'atrasos-end'); }
 function loadFaltas() { todayInputs('faltas-start', 'faltas-end'); }
 
+async function loadAssiduidade() {
+  const { data, error } = await supabase.rpc('admin_list_employees'); if (error) throw error;
+  const select = $('assiduidade-employee');
+  select.innerHTML = data.map(row => `<option value="${escapeAttr(row.enrollment)}">${escapeHtml(row.name)}</option>`).join('') || '<option value="">Nenhum funcionário</option>';
+  todayInputs('assiduidade-start', 'assiduidade-end');
+}
+function loadForaCerca() { todayInputs('fora-cerca-start', 'fora-cerca-end'); }
+
 async function runEspelho() {
   const { data, error } = await supabase.rpc('admin_espelho', { p_enrollment: $('espelho-employee').value, p_month: $('espelho-month').value + '-01' });
   if (error) { message(error.message, true); return; }
@@ -163,21 +171,65 @@ async function runResumo() {
   const { data, error } = await supabase.rpc('admin_resumo_mensal', { p_month: $('resumo-month').value + '-01' });
   if (error) { message(error.message, true); return; }
   const rows = data.rows || [];
+  renderKpis('resumo-kpis', [
+    ['Funcionários ativos', rows.length],
+    ['Dias úteis', data.dias_uteis || 0],
+    ['Faltas', rows.reduce((sum, row) => sum + (row.faltas || 0), 0)],
+    ['Atrasos', rows.reduce((sum, row) => sum + (row.atrasos || 0), 0)]
+  ]);
   $('resumo-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td>${row.dias_trabalhados}</td><td>${row.faltas}</td><td>${row.atrasos}</td><td>${hours(row.minutos_trabalhados)}</td><td>${hours(row.minutos_esperados)}</td><td class="${row.saldo_minutos < 0 ? 'danger' : ''}">${hours(row.saldo_minutos)}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Sem funcionários ativos.</td></tr>';
 }
 
 async function runAtrasos() {
   const { data, error } = await supabase.rpc('admin_rel_atrasos', { p_start: $('atrasos-start').value, p_end: $('atrasos-end').value });
   if (error) { message(error.message, true); return; }
-  const rows = data.rows || [];
-  $('atrasos-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.previsto)}</td><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.batida)}</td><td>${row.atraso_min} min</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum atraso no período.</td></tr>';
+  renderKpis('atrasos-kpis', [
+    ['Funcionários com atraso', data.resumo?.funcionarios_com_atraso || 0],
+    ['Total de atrasos', data.resumo?.total_atrasos || 0],
+    ['Minutos perdidos', (data.resumo?.total_minutos || 0) + ' min']
+  ]);
+  $('atrasos-func-list').innerHTML = (data.por_funcionario || []).map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td>${row.atrasos}</td><td>${Math.round(row.minutos_atraso)} min</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum atraso no período.</td></tr>';
+  $('atrasos-list').innerHTML = (data.lista || []).map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.previsto)}</td><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.batida)}</td><td>${row.atraso_min} min</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum atraso no período.</td></tr>';
 }
 
 async function runFaltas() {
   const { data, error } = await supabase.rpc('admin_rel_faltas', { p_start: $('faltas-start').value, p_end: $('faltas-end').value });
   if (error) { message(error.message, true); return; }
-  const rows = data.rows || [];
-  $('faltas-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.dia)}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">Nenhuma falta no período.</td></tr>';
+  renderKpis('faltas-kpis', [
+    ['Faltas', data.resumo?.total_faltas || 0],
+    ['Abonadas', data.resumo?.abonadas || 0],
+    ['Não abonadas', data.resumo?.nao_abonadas || 0],
+    ['Funcionários', data.resumo?.funcionarios || 0]
+  ]);
+  $('faltas-func-list').innerHTML = (data.por_funcionario || []).map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${row.total}</td><td>${row.abonadas}</td><td class="${row.nao_abonadas > 0 ? 'danger' : ''}">${row.nao_abonadas}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma falta no período.</td></tr>';
+  $('faltas-list').innerHTML = (data.lista || []).map(row => `<tr><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.automatica ? 'Falta (automática)' : row.tipo)}</td><td>${row.excused ? '<span class="badge">Abonada</span>' : '<span class="badge off">Não abonada</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma falta no período.</td></tr>';
+}
+
+function renderKpis(containerId, items) {
+  $(containerId).innerHTML = items.map(item => `<article><strong>${item[1]}</strong><span>${item[0]}</span></article>`).join('');
+}
+
+async function runAssiduidade() {
+  const { data, error } = await supabase.rpc('admin_assiduidade', { p_enrollment: $('assiduidade-employee').value, p_start: $('assiduidade-start').value, p_end: $('assiduidade-end').value });
+  if (error) { message(error.message, true); return; }
+  const rows = [
+    ['Funcionário', data.name], ['Matrícula', data.enrollment], ['Jornada', data.jornada || '-'],
+    ['Dias úteis', data.dias_uteis], ['Dias trabalhados', data.dias_trabalhados], ['Faltas', data.faltas],
+    ['Atrasos', data.atrasos], ['Total trabalhado', hours(data.total_min)],
+    ['Esperado', hours(data.esperado_min)], ['Saldo', hours(data.saldo_min)]
+  ];
+  $('assiduidade-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row[0])}</td><td class="${row[0] === 'Saldo' && data.saldo_min < 0 ? 'danger' : ''}">${escapeHtml(row[1])}</td></tr>`).join('');
+}
+
+async function runForaCerca() {
+  const { data, error } = await supabase.rpc('admin_rel_fora_cerca', { p_start: $('fora-cerca-start').value, p_end: $('fora-cerca-end').value });
+  if (error) { message(error.message, true); return; }
+  renderKpis('fora-cerca-kpis', [
+    ['Batidas fora', data.resumo?.total_batidas || 0],
+    ['Funcionários', data.resumo?.funcionarios_envolvidos || 0]
+  ]);
+  $('fora-cerca-func-list').innerHTML = (data.por_funcionario || []).map(row => `<tr><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${row.total}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nenhuma batida fora da cerca.</td></tr>';
+  $('fora-cerca-list').innerHTML = (data.lista || []).map(row => `<tr><td>${escapeHtml(row.dia)}</td><td>${escapeHtml(row.hora)}</td><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.origin)}</td><td>${row.distance_meters != null ? Math.round(row.distance_meters) + ' m' : '-'}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Nenhuma batida fora da cerca.</td></tr>';
 }
 
 async function loadOffline() {
@@ -205,6 +257,50 @@ async function deletePunch(id) {
   message('Batida excluída.'); await runBatidas();
 }
 
+async function loadAbsences() {
+  const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1);
+  const { data, error } = await supabase.rpc('admin_list_absences', { p_start: start.toISOString().slice(0, 10), p_end: end.toISOString().slice(0, 10) });
+  if (error) throw error;
+  const rows = data || [];
+  $('absences-list').dataset.rows = JSON.stringify(rows);
+  $('absences-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.absence_date)}</td><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.type)}</td><td>${row.excused ? '<span class="badge">Sim</span>' : '<span class="badge off">Não</span>'}</td><td>${escapeHtml(row.reason || '-')}</td><td>${actionButtons([{ label: 'Editar', action: 'edit-absence', id: row.id }, { label: 'Excluir', action: 'delete-absence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Nenhuma ausência registrada no mês.</td></tr>';
+}
+
+function clearAbsence() { $('absence-form').reset(); $('absence-id').value = ''; message(''); }
+
+function editAbsence(id) {
+  const rows = JSON.parse($('absences-list').dataset.rows || '[]');
+  const row = rows.find(item => item.id === id);
+  if (!row) return;
+  $('absence-id').value = row.id; $('absence-enrollment').value = row.enrollment;
+  $('absence-date').value = row.absence_date.split('/').reverse().join('-');
+  $('absence-type').value = row.type;
+  $('absence-excused').checked = row.excused;
+  $('absence-reason').value = row.reason || '';
+  message('Editando ausência.');
+}
+
+async function saveAbsence(event) {
+  event.preventDefault();
+  const { error } = await supabase.rpc('admin_save_absence', {
+    p_id: $('absence-id').value || null,
+    p_enrollment: $('absence-enrollment').value.trim(),
+    p_date: $('absence-date').value,
+    p_type: $('absence-type').value,
+    p_reason: $('absence-reason').value,
+    p_excused: $('absence-excused').checked
+  });
+  if (error) { message(error.message, true); return; }
+  clearAbsence(); message('Ausência salva.'); await loadAbsences();
+}
+
+async function deleteAbsence(id) {
+  if (!confirm('Excluir esta ausência?')) return;
+  const { error } = await supabase.rpc('admin_delete_absence', { p_id: id });
+  if (error) { message(error.message, true); return; }
+  message('Ausência excluída.'); await loadAbsences();
+}
+
 async function loadHolidays() {
   const { data, error } = await supabase.rpc('admin_list_holidays'); if (error) throw error;
   const rows = data.rows || [];
@@ -217,7 +313,7 @@ async function deleteHoliday(date) { if (!confirm('Excluir este feriado?')) retu
 async function loadProfiles() {
   const { data, error } = await supabase.rpc('admin_list_profiles'); if (error) throw error;
   const rows = data.rows || [];
-  $('profiles-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.email)}</td><td>${escapeHtml(row.display_name || '-')}</td><td>${escapeHtml(row.role === 'admin' ? 'Administrador' : 'Operador')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Remover', action: 'delete-profile', id: row.user_id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum acesso vinculado.</td></tr>';
+  $('profiles-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.email)}</td><td>${escapeHtml(row.display_name || '-')}</td><td>${escapeHtml(row.role === 'admin' ? 'Administrador' : 'Operador')}</td><td><span class="badge${row.active ? '' : ' off'}">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Remover', action: 'delete-profile', id: row.user_id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum acesso vinculado.</td></tr>';
 }
 
 async function signUpAccount(email, password) {
@@ -291,15 +387,20 @@ $('espelho-run').addEventListener('click', runEspelho);
 $('resumo-run').addEventListener('click', runResumo);
 $('atrasos-run').addEventListener('click', runAtrasos);
 $('faltas-run').addEventListener('click', runFaltas);
+$('assiduidade-run').addEventListener('click', runAssiduidade);
+$('fora-cerca-run').addEventListener('click', runForaCerca);
 $('batidas-run').addEventListener('click', runBatidas);
 $('holiday-form').addEventListener('submit', saveHoliday);
 $('profile-form').addEventListener('submit', saveProfile);
+$('absence-form').addEventListener('submit', saveAbsence);
 
 const reportButtons = [
   ['espelho-print', 'espelho-table', 'espelho'], ['espelho-csv', 'espelho-table', 'espelho'],
   ['resumo-print', 'resumo-table', 'resumo'], ['resumo-csv', 'resumo-table', 'resumo'],
   ['atrasos-print', 'atrasos-table', 'atrasos'], ['atrasos-csv', 'atrasos-table', 'atrasos'],
   ['faltas-print', 'faltas-table', 'faltas'], ['faltas-csv', 'faltas-table', 'faltas'],
+  ['assiduidade-print', 'assiduidade-table', 'assiduidade'], ['assiduidade-csv', 'assiduidade-table', 'assiduidade'],
+  ['fora-cerca-print', 'fora-cerca-table', 'fora-cerca'], ['fora-cerca-csv', 'fora-cerca-table', 'fora-cerca'],
   ['offline-print', 'offline-table', 'offline'], ['offline-csv', 'offline-table', 'offline'],
   ['batidas-print', 'batidas-table', 'batidas'], ['batidas-csv', 'batidas-table', 'batidas']
 ];
@@ -328,7 +429,10 @@ document.body.addEventListener('click', event => {
     'delete-geofence': () => deleteGeofence(d.id),
     'delete-holiday': () => deleteHoliday(d.date),
     'delete-profile': () => deleteProfile(d.id),
-    'delete-punch': () => deletePunch(d.id)
+    'delete-punch': () => deletePunch(d.id),
+    'edit-absence': () => editAbsence(d.id),
+    'delete-absence': () => deleteAbsence(d.id),
+    'clear-absence': () => clearAbsence()
   };
   const handler = route[btn.dataset.action];
   if (handler) Promise.resolve(handler()).catch(error => message(error.message, true));
@@ -336,6 +440,6 @@ document.body.addEventListener('click', event => {
 
 requireAdmin().then(isAdmin => {
   if (isAdmin) return showPage('dashboard');
-  $('login-message').textContent = 'Pronto para entrar.';
+  $('login-message').textContent = '';
 }).catch(error => { $('login-message').textContent = error.message || 'Não foi possível iniciar o Admin.'; });
 })();
