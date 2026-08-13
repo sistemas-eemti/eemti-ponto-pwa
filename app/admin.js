@@ -27,7 +27,7 @@ const supabase = {
   }
 };
 const $ = id => document.getElementById(id);
-const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', offline: 'Monitor offline' };
+const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', offline: 'Monitor offline', batidas: 'Batidas', holidays: 'Feriados', profiles: 'Acessos' };
 
 function message(text = '', error = false) { const el = $('app-message'); el.textContent = text; el.style.color = error ? 'var(--red)' : 'var(--green)'; }
 function optionList(id, rows, label) { $(id).innerHTML = '<option value="">Nenhum</option>' + rows.map(row => `<option value="${row.id}">${escapeHtml(row[label])}</option>`).join(''); }
@@ -106,7 +106,7 @@ async function loadGeofences() {
   $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge">${row.active ? 'Ativa' : 'Inativa'}</span></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
 }
 
-async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'offline') await loadOffline(); }
+async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'profiles') await loadProfiles(); }
 
 function monthInput(id) { const value = new Date().toISOString().slice(0, 7); $(id).value = value; return value; }
 function todayInputs(startId, endId) { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); $(endId).value = end.toISOString().slice(0, 10); $(startId).value = start.toISOString().slice(0, 10); }
@@ -158,6 +158,56 @@ async function loadOffline() {
 
 function hours(minutes) { const m = Math.abs(minutes || 0); return `${minutes < 0 ? '-' : ''}${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`; }
 function shortDateTime(value) { if (!value) return '-'; return String(value).replace('T', ' ').slice(0, 16); }
+
+function loadBatidas() { todayInputs('batidas-start', 'batidas-end'); }
+
+async function runBatidas() {
+  const { data, error } = await supabase.rpc('admin_list_punches', { p_start: $('batidas-start').value, p_end: $('batidas-end').value });
+  if (error) { message(error.message, true); return; }
+  const rows = data.rows || [];
+  $('batidas-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.name)} (${escapeHtml(row.enrollment)})</td><td>${escapeHtml(row.origin)}</td><td>${row.captured_offline ? 'Sim' : 'Não'}</td><td>${row.inside_geofence === false ? 'Fora' : row.inside_geofence === true ? 'Dentro' : '-'}</td><td>${row.distance_meters != null ? `${row.distance_meters} m` : '-'}</td><td>${row.excluded ? '<span class="badge">Excluída</span>' : 'Ativa'}</td><td>${row.excluded ? '' : actionButtons([{ label: 'Excluir', fn: `deletePunch('${row.id}')` }])}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Nenhuma batida no período.</td></tr>';
+}
+
+async function deletePunch(id) {
+  const reason = prompt('Motivo da exclusão desta batida:');
+  if (!reason) return;
+  const { error } = await supabase.rpc('admin_delete_punch', { p_id: id, p_reason: reason.trim() });
+  if (error) { message(error.message, true); return; }
+  message('Batida excluída.'); await runBatidas();
+}
+
+async function loadHolidays() {
+  const { data, error } = await supabase.rpc('admin_list_holidays'); if (error) throw error;
+  const rows = data.rows || [];
+  $('holidays-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.holiday_date)}</td><td>${escapeHtml(row.description)}</td><td>${escapeHtml(row.type)}</td><td>${actionButtons([{ label: 'Excluir', fn: `deleteHoliday('${row.holiday_date}')` }])}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhum feriado cadastrado.</td></tr>';
+}
+
+async function saveHoliday(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_holiday', { p_date: $('holiday-date').value, p_description: $('holiday-description').value, p_type: $('holiday-type').value }); if (error) { message(error.message, true); return; } event.target.reset(); message('Feriado salvo.'); await loadHolidays(); }
+async function deleteHoliday(date) { if (!confirm('Excluir este feriado?')) return; const { error } = await supabase.rpc('admin_delete_holiday', { p_date: date }); if (error) { message(error.message, true); return; } message('Feriado excluído.'); await loadHolidays(); }
+
+async function loadProfiles() {
+  const { data, error } = await supabase.rpc('admin_list_profiles'); if (error) throw error;
+  const rows = data.rows || [];
+  $('profiles-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.email)}</td><td>${escapeHtml(row.display_name || '-')}</td><td>${escapeHtml(row.role === 'admin' ? 'Administrador' : 'Operador')}</td><td><span class="badge">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Remover', fn: `deleteProfile('${row.user_id}')` }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum acesso vinculado.</td></tr>';
+}
+
+async function saveProfile(event) { event.preventDefault(); const { error } = await supabase.rpc('admin_save_profile', { p_user_email: $('profile-email').value.trim(), p_role: $('profile-role').value, p_display_name: $('profile-name').value.trim(), p_active: $('profile-active').checked }); if (error) { message(error.message, true); return; } event.target.reset(); message('Acesso salvo.'); await loadProfiles(); }
+async function deleteProfile(userId) { if (!confirm('Remover este acesso?')) return; const { error } = await supabase.rpc('admin_delete_profile', { p_user_id: userId }); if (error) { message(error.message, true); return; } message('Acesso removido.'); await loadProfiles(); }
+
+function printReport() { window.print(); }
+function exportTable(tableId, filename) {
+  const table = $(tableId);
+  const rows = Array.from(table.querySelectorAll('tr')).map(tr => Array.from(tr.children).map(cell => {
+    const text = (cell.textContent || '').trim().replace(/"/g, '""');
+    return /["\n,;]/.test(text) ? `"${text}"` : text;
+  }).join(';'));
+  const blob = new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
 async function showPage(page) { document.querySelectorAll('.nav').forEach(el => el.classList.toggle('active', el.dataset.page === page)); document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === `${page}-page`)); $('page-title').textContent = pageTitles[page]; await loadPage(page); }
 
 async function login() {
@@ -189,6 +239,24 @@ $('espelho-run').addEventListener('click', runEspelho);
 $('resumo-run').addEventListener('click', runResumo);
 $('atrasos-run').addEventListener('click', runAtrasos);
 $('faltas-run').addEventListener('click', runFaltas);
+$('batidas-run').addEventListener('click', runBatidas);
+$('holiday-form').addEventListener('submit', saveHoliday);
+$('profile-form').addEventListener('submit', saveProfile);
+
+const reportButtons = [
+  ['espelho-print', 'espelho-table', 'espelho'], ['espelho-csv', 'espelho-table', 'espelho'],
+  ['resumo-print', 'resumo-table', 'resumo'], ['resumo-csv', 'resumo-table', 'resumo'],
+  ['atrasos-print', 'atrasos-table', 'atrasos'], ['atrasos-csv', 'atrasos-table', 'atrasos'],
+  ['faltas-print', 'faltas-table', 'faltas'], ['faltas-csv', 'faltas-table', 'faltas'],
+  ['offline-print', 'offline-table', 'offline'], ['offline-csv', 'offline-table', 'offline'],
+  ['batidas-print', 'batidas-table', 'batidas'], ['batidas-csv', 'batidas-table', 'batidas']
+];
+reportButtons.forEach(([id, tableId, name]) => {
+  $(id).addEventListener('click', () => {
+    if (id.endsWith('-print')) printReport();
+    else exportTable(tableId, `${name}-${new Date().toISOString().slice(0, 10)}.csv`);
+  });
+});
 
 requireAdmin().then(isAdmin => {
   if (isAdmin) return showPage('dashboard');
