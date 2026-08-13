@@ -1,53 +1,90 @@
-# EEMTI Ponto PWA
+# EEMTI Ponto — Sistema de Registro de Ponto
 
-Aplicativo offline para Mobile e Quiosque do Sistema de Ponto.
+Sistema de ponto eletrônico da **EEMTI Monsenhor José Augusto da Silva** (Camocim/CE),
+migrado do antigo Google Sheets + Apps Script para **PWA + Supabase + Cloudflare Worker**,
+publicado em GitHub Pages.
 
-## Arquitetura
+| Aplicação | URL |
+|---|---|
+| Mobile (funcionários) | `https://sistemas-eemti.github.io/eemti-ponto-pwa/mobile.html` |
+| Quiosque (recepção) | `https://sistemas-eemti.github.io/eemti-ponto-pwa/quiosque.html` |
+| Admin (gestão) | `https://sistemas-eemti.github.io/eemti-ponto-pwa/admin.html` |
+| API (Worker Cloudflare) | `https://eemti-ponto-api.sistemas-eemti.workers.dev/api` |
 
-`GitHub Pages (PWA) -> Cloudflare Worker -> Google Apps Script -> Google Sheets`
+## Funcionalidades
 
-- A PWA fica disponível offline após o primeiro acesso online.
-- Batidas são salvas no IndexedDB e sincronizadas automaticamente ao recuperar a conexão.
-- O PIN nunca fica armazenado no navegador.
-- O Worker mantém a URL e a chave da API fora do repositório.
+- **Mobile**: batida com geolocalização (verificação de geocerca), funcionamento **offline**
+  com fila no IndexedDB e sincronização automática, PIN criptografado, mensagem da escola
+  exibida após cada batida.
+- **Quiosque**: tablet fixo da recepção, layout maior, cadastro com Enter, sincronização
+  automática a cada 30 s.
+- **Admin**: 21 páginas — cadastros (funcionários, departamentos, cargos, jornadas,
+  geocercas, feriados, motivos), manutenção de ponto (batida manual + ajustes), ocorrências,
+  ausências, acessos, opções, e relatórios completos (espelho, resumo mensal com resumo por
+  departamento, atrasos, faltas, assiduidade, fora da cerca, monitor offline, batidas) com
+  exportação CSV e impressão/PDF, tema claro/escuro.
 
-## Publicação
+## Arquitetura (resumo)
 
-1. No GitHub: Settings > Pages > Deploy from a branch > `main` > `/ (root)`.
-2. No Cloudflare: crie um Worker usando `worker/src/index.js`.
-3. Configure os segredos do Worker:
-   - `APPS_SCRIPT_URL`: URL da implantação da API Apps Script.
-   - `API_SECRET`: mesma chave definida no Apps Script.
-   - `ALLOWED_ORIGIN`: `https://sistemas-eemti.github.io`.
-4. Em `app/config.js`, defina a URL pública do Worker.
-
-## Apps Script
-
-1. Cole o `Codigo.txt` atualizado no projeto Apps Script e salve.
-2. Execute `_gerarSegredoPwaApi()` uma única vez. Copie o valor retornado, sem publicar ou enviar por e-mail.
-3. Faça uma nova implantação do Web App: executar como você e acesso **Qualquer pessoa**. O Worker não tem uma sessão Google; a proteção é feita por `API_SECRET`, que não sai do Cloudflare/Apps Script.
-4. Copie a URL `/exec` dessa implantação para o segredo `APPS_SCRIPT_URL` do Worker.
-
-## Cloudflare Worker
-
-No painel Cloudflare Workers, crie o Worker a partir de `worker/src/index.js` e configure:
-
-```text
-APPS_SCRIPT_URL = URL /exec da implantação Apps Script
-API_SECRET      = retorno de _gerarSegredoPwaApi()
-ALLOWED_ORIGIN  = https://sistemas-eemti.github.io
+```
+PWA (GitHub Pages)
+  Mobile / Quiosque  ──POST──▶  Cloudflare Worker  ──POST──▶  Supabase (RPC sync_punch_api)
+  Admin              ────────────────────────────────▶  Supabase (REST + RPCs admin_*)
 ```
 
-Depois de publicar, copie a URL terminada em `/api` para `app/config.js`.
+- **Mobile/Quiosque** não falam com o Supabase diretamente: passam pelo Worker, que guarda a
+  `SERVICE_ROLE` fora do repositório e valida a origem (CORS).
+- **Admin** fala direto com o Supabase usando a chave publicável (`publishable`) + token de
+  sessão do usuário; **nunca** a `SERVICE_ROLE`.
+- Toda a leitura/escrita administrativa é feita por **funções RPC `security definer`** que
+  checam `is_admin()` — o cliente nunca faz `SELECT`/`UPDATE` direto nas tabelas.
+- Fuso horário padrão: `America/Fortaleza`. Batidas são gravadas em `timestamptz` e exibidas
+  sempre convertidas para esse fuso.
 
-O Worker rejeita qualquer origem diferente do GitHub Pages institucional. Os segredos ficam apenas no Cloudflare e Apps Script.
+## Repositório
 
-## Teste offline
+```
+index.html                 redireciona para mobile.html
+mobile.html / quiosque.html / admin.html   as três aplicações
+app/config.js              URL pública do Worker (Mobile/Quiosque)
+app/admin-config.js        URL + chave publicável do Supabase (Admin)
+app/                       app.js, ponto.js, db.js, admin.js, styles.css, admin.css
+sw.js / manifest.webmanifest   Service Worker e manifesto PWA
+worker/                    Cloudflare Worker (wrangler.toml + src/index.js)
+supabase/migrations/       22 arquivos SQL, na ordem 001 → 022
+docs/                      documentação completa
+CHECKLIST_TESTES.md        roteiro de testes de homologação
+```
 
-1. Abra `mobile.html` ou `quiosque.html` online uma vez.
-2. Confirme que o Service Worker foi instalado no DevTools > Application.
-3. Desligue a rede e recarregue a página: a tela deve continuar abrindo.
-4. Registre uma batida e confirme o status pendente.
-5. Restaure a rede e confirme a sincronização no Monitor Offline do Admin.
+## Documentação
 
-Não publique `API_SECRET` nem a URL interna do Apps Script neste repositório.
+- [01 — Visão geral](docs/01_visao_geral.md)
+- [02 — Arquitetura](docs/02_arquitetura.md)
+- [03 — Implantação (Supabase + Worker + Pages)](docs/03_implantacao.md)
+- [04 — Banco de dados (schema e migrations)](docs/04_banco_de_dados.md)
+- [05 — Funções RPC](docs/05_funcoes_rpc.md)
+- [06 — Frontend (Mobile, Quiosque e Admin)](docs/06_frontend.md)
+- [07 — Segurança](docs/07_seguranca.md)
+- [08 — Operação (dia a dia e problemas comuns)](docs/08_operacao.md)
+- [Checklist de testes](CHECKLIST_TESTES.md)
+
+## Implantação rápida
+
+1. Crie o projeto no Supabase e aplique os migrations `supabase/migrations/` em ordem
+   (001 → 022) no SQL Editor.
+2. Crie a conta `sistemas.eemti@gmail.com` em **Authentication > Users** e rode o migration 007
+   (ou cadastre o perfil admin manualmente).
+3. Crie o Worker Cloudflare a partir de `worker/src/index.js` com as variáveis
+   `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+4. Atualize `app/config.js` (URL do Worker) e `app/admin-config.js` (URL e chave publicável
+   do Supabase) se necessário.
+5. Publique a branch `main` no GitHub Pages.
+
+Passo a passo completo: [docs/03_implantacao.md](docs/03_implantacao.md).
+
+## Segurança (não publique)
+
+- `SUPABASE_SERVICE_ROLE_KEY` **nunca** deve ir para o repositório — fica apenas como variável
+  do Worker (`SUPABASE_SERVICE_ROLE_KEY`).
+- A chave `publicável` pode ficar no repositório (ela é feita para isso), mas não dá acesso
+  administrativo: todo acesso é controlado por RLS + RPCs `security definer` + `is_admin()`.
