@@ -15,6 +15,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
   8. `20260813_018_admin_schedule_break.sql`
   9. `20260813_019_admin_absences_reports.sql`
   10. `20260813_020_admin_outside_attendance.sql`
+  11. `20260813_021_admin_occurrences_reasons_settings.sql`
 - [ ] Recarregar o Admin com Ctrl+F5 (força recarregar JS/CSS novos).
 
 ## 1. Login e segurança (Admin)
@@ -39,11 +40,16 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 - [ ] Acessos: vincular outro e-mail; **criar a conta direto do Admin informando senha inicial**; listar; remover.
 - [ ] Acessos: tentar inativar/alterar o próprio acesso → bloqueado.
 - [ ] Ausências: registrar falta/atestado/férias/folga (data, tipo, abonada, motivo), editar, excluir, listar.
+- [ ] Ocorrências: registrar (matrícula, data, tipo, descrição), editar, excluir, listar (mostra quem registrou).
+- [ ] Motivos: cadastrar (descrição, categoria ajuste/falta/abono, ativo), editar, excluir, listar.
+- [ ] Opções: salvar mensagem ao funcionário, tolerância padrão e e-mail de alerta; conferir tabela "Parâmetros cadastrados".
+- [ ] Trocar minha senha: nova senha (6+ caracteres) e confirmação; sair e entrar com a nova senha.
 
 ## 3. Mobile — online
 
 - [ ] Abrir `mobile.html` no celular; mostrar relógio e data.
 - [ ] Batida com matrícula + PIN corretos: mensagem "Batida registrada."
+- [ ] Com "Mensagem ao funcionário" preenchida em Opções: a mensagem aparece abaixo da confirmação da batida (Mobile e Quiosque).
 - [ ] Batida dentro da geocerca: sem aviso (ou "Dentro").
 - [ ] Batida fora da geocerca: registrada com aviso "Fora da cerca" (e mensagem).
 - [ ] PIN errado: mensagem de erro, sem registrar.
@@ -70,6 +76,7 @@ Estado da implantação: o Admin usa RPCs `security definer`; PWA Mobile/Quiosqu
 
 - [ ] Espelho de ponto: **lista TODAS as batidas do mês** (data, hora, entrada/saída previstas, **intervalo da jornada**, origem, dentro/fora da cerca).
 - [ ] Resumo mensal: dias trabalhados, faltas, atrasos, horas trabalhadas/esperadas e saldo por funcionário + KPIs (funcionários, dias úteis, faltas, atrasos).
+- [ ] Resumo mensal: tabela **"Por departamento"** (funcionários, horas trabalhadas/esperadas, % cumprido, saldo).
 - [ ] Atrasos: período → KPIs (funcionários com atraso, total, minutos) + resumo por funcionário + lista com minutos de atraso.
 - [ ] Faltas: período → KPIs (faltas, abonadas, não abonadas, funcionários) + resumo por funcionário + lista (automáticas e registradas).
 - [ ] Assiduidade: escolher funcionário e período → dias úteis, dias trabalhados, faltas, atrasos, total trabalhado, esperado e saldo.

@@ -27,7 +27,17 @@ const supabase = {
   }
 };
 const $ = id => document.getElementById(id);
-const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', assiduidade: 'Assiduidade', 'fora-cerca': 'Fora da cerca', ausencias: 'Ausências', offline: 'Monitor offline', batidas: 'Batidas', holidays: 'Feriados', profiles: 'Acessos' };
+const pageTitles = { dashboard: 'Visão geral', employees: 'Funcionários', departments: 'Departamentos', positions: 'Cargos', schedules: 'Jornadas', geofences: 'Geocercas', espelho: 'Espelho de ponto', resumo: 'Resumo mensal', atrasos: 'Atrasos', faltas: 'Faltas', assiduidade: 'Assiduidade', 'fora-cerca': 'Fora da cerca', ausencias: 'Ausências', ocorrencias: 'Ocorrências', offline: 'Monitor offline', batidas: 'Batidas', holidays: 'Feriados', motivos: 'Motivos', profiles: 'Acessos', opcoes: 'Opções' };
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const label = theme === 'dark' ? 'Tema claro' : 'Tema escuro';
+  $('theme').textContent = label;
+  const loginTheme = $('login-theme'); if (loginTheme) loginTheme.textContent = label;
+  try { localStorage.setItem('eemti-admin-theme', theme); } catch (_) {}
+}
+function toggleTheme() { applyTheme((document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark'); }
+(function () { let t = null; try { t = localStorage.getItem('eemti-admin-theme'); } catch (_) {} applyTheme(t === 'dark' ? 'dark' : 'light'); })();
 
 function message(text = '', error = false) { const el = $('app-message'); el.textContent = text; el.style.color = error ? 'var(--red)' : 'var(--green)'; }
 function optionList(id, rows, label) { $(id).innerHTML = '<option value="">Nenhum</option>' + rows.map(row => `<option value="${row.id}">${escapeHtml(row[label])}</option>`).join(''); }
@@ -136,7 +146,7 @@ async function loadGeofences() {
   $('geofences-list').innerHTML = data.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.latitude}, ${row.longitude}</td><td>${row.radius_meters} m</td><td><span class="badge${row.active ? '' : ' off'}">${row.active ? 'Ativa' : 'Inativa'}</span></td><td>${actionButtons([{ label: row.active ? 'Inativar' : 'Ativar', action: 'toggle-geofence', id: row.id, active: !row.active }, { label: 'Excluir', action: 'delete-geofence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhuma geocerca cadastrada.</td></tr>';
 }
 
-async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'assiduidade') await loadAssiduidade(); if (page === 'fora-cerca') await loadForaCerca(); if (page === 'ausencias') await loadAbsences(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'profiles') await loadProfiles(); }
+async function loadPage(page) { message(); if (page === 'dashboard') await loadDashboard(); if (page === 'employees') await loadEmployees(); if (page === 'departments') await loadDepartments(); if (page === 'positions') await loadPositions(); if (page === 'schedules') await loadSchedules(); if (page === 'geofences') await loadGeofences(); if (page === 'espelho') await loadEspelho(); if (page === 'resumo') await loadResumo(); if (page === 'atrasos') await loadAtrasos(); if (page === 'faltas') await loadFaltas(); if (page === 'assiduidade') await loadAssiduidade(); if (page === 'fora-cerca') await loadForaCerca(); if (page === 'ausencias') await loadAbsences(); if (page === 'ocorrencias') await loadOccurrences(); if (page === 'offline') await loadOffline(); if (page === 'batidas') await loadBatidas(); if (page === 'holidays') await loadHolidays(); if (page === 'motivos') await loadReasons(); if (page === 'profiles') await loadProfiles(); if (page === 'opcoes') await loadSettings(); }
 
 function monthInput(id) { const value = new Date().toISOString().slice(0, 7); $(id).value = value; return value; }
 function todayInputs(startId, endId) { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); $(endId).value = end.toISOString().slice(0, 10); $(startId).value = start.toISOString().slice(0, 10); }
@@ -178,6 +188,7 @@ async function runResumo() {
     ['Atrasos', rows.reduce((sum, row) => sum + (row.atrasos || 0), 0)]
   ]);
   $('resumo-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.department || '-')}</td><td>${row.dias_trabalhados}</td><td>${row.faltas}</td><td>${row.atrasos}</td><td>${hours(row.minutos_trabalhados)}</td><td>${hours(row.minutos_esperados)}</td><td class="${row.saldo_minutos < 0 ? 'danger' : ''}">${hours(row.saldo_minutos)}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Sem funcionários ativos.</td></tr>';
+  $('resumo-deptos-list').innerHTML = (data.departamentos || []).map(row => `<tr><td>${escapeHtml(row.nome)}</td><td>${row.funcionarios}</td><td>${hours(row.trabalhado_min)}</td><td>${hours(row.esperado_min)}</td><td>${row.esperado_min > 0 ? Math.round(row.trabalhado_min * 100 / row.esperado_min) + '%' : '—'}</td><td class="${row.saldo_min < 0 ? 'danger' : ''}">${hours(row.saldo_min)}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Sem departamentos.</td></tr>';
 }
 
 async function runAtrasos() {
@@ -301,6 +312,115 @@ async function deleteAbsence(id) {
   message('Ausência excluída.'); await loadAbsences();
 }
 
+async function loadOccurrences() {
+  const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth() - 2, 1);
+  const { data, error } = await supabase.rpc('admin_list_occurrences', { p_start: start.toISOString().slice(0, 10), p_end: end.toISOString().slice(0, 10) });
+  if (error) throw error;
+  const rows = data || [];
+  $('occurrences-list').dataset.rows = JSON.stringify(rows);
+  $('occurrences-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.occurrence_date)}</td><td>${escapeHtml(row.enrollment)}</td><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.type)}</td><td>${escapeHtml(row.description)}</td><td>${escapeHtml(row.recorded_by || '-')}</td><td>${actionButtons([{ label: 'Editar', action: 'edit-occurrence', id: row.id }, { label: 'Excluir', action: 'delete-occurrence', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Nenhuma ocorrência registrada no período.</td></tr>';
+}
+
+function clearOccurrence() { $('occurrence-form').reset(); $('occurrence-id').value = ''; message(''); }
+
+function editOccurrence(id) {
+  const rows = JSON.parse($('occurrences-list').dataset.rows || '[]');
+  const row = rows.find(item => item.id === id);
+  if (!row) return;
+  $('occurrence-id').value = row.id; $('occurrence-enrollment').value = row.enrollment;
+  $('occurrence-date').value = row.occurrence_date.split('/').reverse().join('-');
+  $('occurrence-type').value = row.type; $('occurrence-description').value = row.description;
+  message('Editando ocorrência.');
+}
+
+async function saveOccurrence(event) {
+  event.preventDefault();
+  const { error } = await supabase.rpc('admin_save_occurrence', {
+    p_id: $('occurrence-id').value || null,
+    p_enrollment: $('occurrence-enrollment').value.trim(),
+    p_date: $('occurrence-date').value,
+    p_type: $('occurrence-type').value.trim(),
+    p_description: $('occurrence-description').value.trim()
+  });
+  if (error) { message(error.message, true); return; }
+  clearOccurrence(); message('Ocorrência salva.'); await loadOccurrences();
+}
+
+async function deleteOccurrence(id) {
+  if (!confirm('Excluir esta ocorrência?')) return;
+  const { error } = await supabase.rpc('admin_delete_occurrence', { p_id: id });
+  if (error) { message(error.message, true); return; }
+  message('Ocorrência excluída.'); await loadOccurrences();
+}
+
+async function loadReasons() {
+  const { data, error } = await supabase.rpc('admin_list_reasons'); if (error) throw error;
+  const rows = data || [];
+  $('reasons-list').dataset.rows = JSON.stringify(rows);
+  $('reasons-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.description)}</td><td>${escapeHtml(row.category)}</td><td><span class="badge${row.active ? '' : ' off'}">${row.active ? 'Ativo' : 'Inativo'}</span></td><td>${actionButtons([{ label: 'Editar', action: 'edit-reason', id: row.id }, { label: 'Excluir', action: 'delete-reason', id: row.id }])}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nenhum motivo cadastrado.</td></tr>';
+}
+
+function clearReason() { $('reason-form').reset(); $('reason-id').value = ''; $('reason-active').checked = true; message(''); }
+
+function editReason(id) {
+  const rows = JSON.parse($('reasons-list').dataset.rows || '[]');
+  const row = rows.find(item => item.id === id);
+  if (!row) return;
+  $('reason-id').value = row.id; $('reason-description').value = row.description;
+  $('reason-category').value = row.category; $('reason-active').checked = row.active;
+  message('Editando motivo.');
+}
+
+async function saveReason(event) {
+  event.preventDefault();
+  const { error } = await supabase.rpc('admin_save_reason', {
+    p_id: $('reason-id').value || null,
+    p_description: $('reason-description').value.trim(),
+    p_category: $('reason-category').value,
+    p_active: $('reason-active').checked
+  });
+  if (error) { message(error.message, true); return; }
+  clearReason(); message('Motivo salvo.'); await loadReasons();
+}
+
+async function deleteReason(id) {
+  if (!confirm('Excluir este motivo?')) return;
+  const { error } = await supabase.rpc('admin_delete_reason', { p_id: id });
+  if (error) { message(error.message, true); return; }
+  message('Motivo excluído.'); await loadReasons();
+}
+
+async function loadSettings() {
+  const { data, error } = await supabase.rpc('admin_list_settings'); if (error) throw error;
+  const rows = data || [];
+  $('settings-list').innerHTML = rows.map(row => `<tr><td>${escapeHtml(row.key)}</td><td>${escapeHtml(row.value)}</td><td>${escapeHtml(row.updated_at || '-')}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nenhum parâmetro cadastrado.</td></tr>';
+  rows.forEach(row => {
+    if (row.key === 'mensagem_funcionario') $('setting-message').value = row.value;
+    if (row.key === 'tolerancia_padrao') $('setting-tolerance').value = row.value;
+    if (row.key === 'email_alertas') $('setting-alert-email').value = row.value;
+  });
+}
+
+async function saveSetting(key, inputId) {
+  const { error } = await supabase.rpc('admin_save_setting', { p_key: key, p_value: $(inputId).value.trim() });
+  if (error) { message(error.message, true); return; }
+  message('Parâmetro salvo.'); await loadSettings();
+}
+
+async function changePassword() {
+  const password = $('password-new').value;
+  if (!password || password.length < 6) { message('A nova senha deve ter ao menos 6 caracteres.', true); return; }
+  if (password !== $('password-confirm').value) { message('As senhas não conferem.', true); return; }
+  const session = savedSession();
+  if (!session?.access_token) { message('Sessão expirada. Entre novamente.', true); return; }
+  const result = await request(`${window.ADMIN_CONFIG.SUPABASE_URL}/auth/v1/user`, {
+    method: 'PUT', headers: { apikey: window.ADMIN_CONFIG.SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ password })
+  });
+  if (result.error) { message(result.error.msg || result.error.message || 'Não foi possível atualizar a senha.', true); return; }
+  $('password-new').value = ''; $('password-confirm').value = '';
+  message('Senha atualizada.');
+}
+
 async function loadHolidays() {
   const { data, error } = await supabase.rpc('admin_list_holidays'); if (error) throw error;
   const rows = data.rows || [];
@@ -393,6 +513,13 @@ $('batidas-run').addEventListener('click', runBatidas);
 $('holiday-form').addEventListener('submit', saveHoliday);
 $('profile-form').addEventListener('submit', saveProfile);
 $('absence-form').addEventListener('submit', saveAbsence);
+$('occurrence-form').addEventListener('submit', saveOccurrence);
+$('reason-form').addEventListener('submit', saveReason);
+$('save-message').addEventListener('click', () => saveSetting('mensagem_funcionario', 'setting-message'));
+$('save-parameters').addEventListener('click', () => { saveSetting('tolerancia_padrao', 'setting-tolerance'); saveSetting('email_alertas', 'setting-alert-email'); });
+$('password-change').addEventListener('click', changePassword);
+$('theme').addEventListener('click', toggleTheme);
+$('login-theme').addEventListener('click', toggleTheme);
 
 const reportButtons = [
   ['espelho-print', 'espelho-table', 'espelho'], ['espelho-csv', 'espelho-table', 'espelho'],
@@ -432,7 +559,13 @@ document.body.addEventListener('click', event => {
     'delete-punch': () => deletePunch(d.id),
     'edit-absence': () => editAbsence(d.id),
     'delete-absence': () => deleteAbsence(d.id),
-    'clear-absence': () => clearAbsence()
+    'clear-absence': () => clearAbsence(),
+    'edit-occurrence': () => editOccurrence(d.id),
+    'delete-occurrence': () => deleteOccurrence(d.id),
+    'clear-occurrence': () => clearOccurrence(),
+    'edit-reason': () => editReason(d.id),
+    'delete-reason': () => deleteReason(d.id),
+    'clear-reason': () => clearReason()
   };
   const handler = route[btn.dataset.action];
   if (handler) Promise.resolve(handler()).catch(error => message(error.message, true));

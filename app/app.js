@@ -2,8 +2,18 @@ const channel = document.body.dataset.channel;
 const needsGeo = channel === 'mobile';
 const $ = id => document.getElementById(id);
 
+function escapeText(value) { const el = document.createElement('span'); el.textContent = value ?? ''; return el.innerHTML; }
+
 function feedback(kind, text) { const el = $('feedback'); el.className = 'feedback ' + kind; el.textContent = text; }
 function atualizarRelogio() { const now = new Date(); $('clock').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); $('date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = $('theme-toggle'); if (btn) btn.textContent = theme === 'dark' ? 'Tema claro' : 'Tema escuro';
+  try { localStorage.setItem('ponto_tema', theme); } catch (_) {}
+}
+function toggleTheme() { applyTheme((document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark'); }
+(function () { let t = null; try { t = localStorage.getItem('ponto_tema'); } catch (_) {} applyTheme(t === 'escuro' || t === 'dark' ? 'dark' : 'light'); })();
 
 async function status() {
   const count = await pendingCount(channel);
@@ -33,7 +43,7 @@ async function punch() {
     }
     await queuePunch(matricula, geo);
     const result = await syncFor(channel, matricula, { pin, token: await tokenFor(channel, matricula) });
-    if (result.last) { feedback('ok', result.last.message || 'Batida registrada.'); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
+    if (result.last) { const el = $('feedback'); el.className = 'feedback ok'; el.innerHTML = escapeText(result.last.message || 'Batida registrada.') + (result.last.aviso ? '<br><span class="aviso">' + escapeText(result.last.aviso) + '</span>' : ''); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
     else if (result.offline) { feedback('warn', 'Sem conexão. Batida salva neste aparelho.'); $('matricula').value = ''; $('pin').value = ''; $('matricula').focus(); }
     else feedback('error', result.error || 'Batida pendente.');
   } catch (_) { feedback('error', needsGeo ? 'Não foi possível obter a localização.' : 'Não foi possível registrar a batida.'); }
@@ -61,6 +71,7 @@ async function autoSync() {
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 window.addEventListener('online', autoSync);
 window.addEventListener('offline', status);
+const themeToggle = $('theme-toggle'); if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 $('punch').addEventListener('click', punch);
 const syncButton = $('sync'); if (syncButton) syncButton.addEventListener('click', syncPending);
 if (channel === 'kiosk') {

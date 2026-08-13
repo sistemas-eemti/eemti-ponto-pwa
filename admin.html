@@ -4,11 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#117437">
-  <link rel="stylesheet" href="app/admin.css?v=7">
+  <link rel="stylesheet" href="app/admin.css?v=8">
   <title>Administração | EEMTI Ponto</title>
 </head>
 <body>
   <main id="login-view" class="login-view">
+    <button id="login-theme" class="theme-toggle" type="button">Tema escuro</button>
     <form id="login-form" class="login-card">
       <img src="assets/logo-eemti.png" alt="EEMTI Monsenhor José Augusto da Silva">
       <p class="eyebrow">Sistema de ponto</p>
@@ -40,12 +41,15 @@
         <button class="nav" data-page="assiduidade">Assiduidade</button>
         <button class="nav" data-page="fora-cerca">Fora da cerca</button>
         <button class="nav" data-page="ausencias">Ausências</button>
+        <button class="nav" data-page="ocorrencias">Ocorrências</button>
         <button class="nav" data-page="offline">Monitor offline</button>
         <button class="nav" data-page="batidas">Batidas</button>
         <button class="nav" data-page="holidays">Feriados</button>
+        <button class="nav" data-page="motivos">Motivos</button>
         <button class="nav" data-page="profiles">Acessos</button>
+        <button class="nav" data-page="opcoes">Opções</button>
       </nav>
-      <div class="account"><strong id="account-name"></strong><button id="logout" class="link">Sair</button></div>
+      <div class="account"><strong id="account-name"></strong><button id="theme" class="link">Tema escuro</button><button id="logout" class="link">Sair</button></div>
     </aside>
     <section class="content">
       <header><div><p class="eyebrow" id="page-eyebrow">Administração</p><h1 id="page-title">Visão geral</h1></div><button id="refresh" class="secondary">Atualizar</button></header>
@@ -101,7 +105,7 @@
       </section>
 
       <section id="resumo-page" class="page">
-        <article class="panel"><h2>Resumo mensal</h2><div class="row"><div><label>Mês<input id="resumo-month" type="month"></label></div></div><div class="actions"><button id="resumo-run" class="secondary">Gerar resumo</button><button id="resumo-print" class="secondary">Imprimir / PDF</button><button id="resumo-csv" class="secondary">Exportar CSV</button></div><div id="resumo-kpis" class="kpis"></div><div class="table-wrap"><table id="resumo-table"><thead><tr><th>Funcionário</th><th>Depto</th><th>Trab.</th><th>Faltas</th><th>Atrasos</th><th>Horas trab.</th><th>Horas esper.</th><th>Saldo</th></tr></thead><tbody id="resumo-list"></tbody></table></div></article>
+        <article class="panel"><h2>Resumo mensal</h2><div class="row"><div><label>Mês<input id="resumo-month" type="month"></label></div></div><div class="actions"><button id="resumo-run" class="secondary">Gerar resumo</button><button id="resumo-print" class="secondary">Imprimir / PDF</button><button id="resumo-csv" class="secondary">Exportar CSV</button></div><div id="resumo-kpis" class="kpis"></div><div class="table-wrap"><table id="resumo-table"><thead><tr><th>Funcionário</th><th>Depto</th><th>Trab.</th><th>Faltas</th><th>Atrasos</th><th>Horas trab.</th><th>Horas esper.</th><th>Saldo</th></tr></thead><tbody id="resumo-list"></tbody></table></div><h2>Por departamento</h2><div class="table-wrap"><table id="resumo-deptos-table"><thead><tr><th>Departamento</th><th>Funcionários</th><th>Horas trabalhadas</th><th>Horas esperadas</th><th>% cumprido</th><th>Saldo</th></tr></thead><tbody id="resumo-deptos-list"></tbody></table></div></article>
       </section>
 
       <section id="atrasos-page" class="page">
@@ -127,6 +131,20 @@
         </div>
       </section>
 
+      <section id="ocorrencias-page" class="page">
+        <div class="two-columns">
+          <form id="occurrence-form" class="panel"><h2>Registrar ocorrência</h2><input type="hidden" id="occurrence-id"><label>Matrícula ou CPF<input id="occurrence-enrollment" required></label><label>Data<input id="occurrence-date" type="date" required></label><label>Tipo<input id="occurrence-type" placeholder="Ex.: advertência, elogio"></label><label>Descrição<input id="occurrence-description" required></label><button>Salvar ocorrência</button><button type="button" class="mini" data-action="clear-occurrence">Novo / limpar</button></form>
+          <article class="panel"><h2>Ocorrências registradas</h2><div class="table-wrap"><table><thead><tr><th>Data</th><th>Matrícula</th><th>Nome</th><th>Tipo</th><th>Descrição</th><th>Registrado por</th><th>Ações</th></tr></thead><tbody id="occurrences-list"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="motivos-page" class="page">
+        <div class="two-columns">
+          <form id="reason-form" class="panel"><h2>Cadastrar motivo</h2><input type="hidden" id="reason-id"><label>Descrição<input id="reason-description" required></label><label>Categoria<select id="reason-category"><option value="ajuste">Ajuste</option><option value="falta">Falta</option><option value="abono">Abono</option></select></label><label class="check"><input id="reason-active" type="checkbox" checked> Ativo</label><button>Salvar motivo</button><button type="button" class="mini" data-action="clear-reason">Novo / limpar</button></form>
+          <article class="panel"><h2>Motivos</h2><div class="table-wrap"><table><thead><tr><th>Descrição</th><th>Categoria</th><th>Status</th><th>Ações</th></tr></thead><tbody id="reasons-list"></tbody></table></div></article>
+        </div>
+      </section>
+
       <section id="offline-page" class="page">
         <article class="panel"><h2>Monitor offline</h2><p class="muted">Batidas capturadas sem conexão e sincronizadas depois.</p><div class="actions"><button id="offline-print" class="secondary">Imprimir / PDF</button><button id="offline-csv" class="secondary">Exportar CSV</button></div><div class="table-wrap"><table id="offline-table"><thead><tr><th>Funcionário</th><th>Origem</th><th>Capturada em</th><th>Sincronizada em</th><th>Registro</th></tr></thead><tbody id="offline-list"></tbody></table></div></article>
       </section>
@@ -147,10 +165,17 @@
           <form id="profile-form" class="panel"><h2>Vincular acesso</h2><label>E-mail<input id="profile-email" type="email" required></label><label>Senha inicial (cria a conta no Supabase Auth, se não existir)<input id="profile-password" type="password" autocomplete="new-password"></label><div class="row"><div><label>Perfil<select id="profile-role"><option value="admin">Administrador</option><option value="operator">Operador</option></select></label></div><div><label>Nome de exibição<input id="profile-name"></label></div></div><label class="check"><input id="profile-active" type="checkbox" checked> Acesso ativo</label><button>Salvar acesso</button></form>
           <article class="panel"><h2>Acessos</h2><div class="table-wrap"><table><thead><tr><th>E-mail</th><th>Nome</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead><tbody id="profiles-list"></tbody></table></div></article>
         </div>
+        <article class="panel"><h2>Trocar minha senha</h2><div class="row"><div><label>Nova senha<input id="password-new" type="password" autocomplete="new-password"></label></div><div><label>Confirmar nova senha<input id="password-confirm" type="password" autocomplete="new-password"></label></div></div><button id="password-change" class="secondary" type="button">Atualizar minha senha</button></article>
+      </section>
+
+      <section id="opcoes-page" class="page">
+        <article class="panel"><h2>Mensagem ao funcionário</h2><p class="muted">Aparece no Mobile e no Quiosque quando o funcionário bate o ponto.</p><label>Mensagem<input id="setting-message" placeholder="Ex.: Bom trabalho!"></label><button id="save-message" class="secondary" type="button">Salvar mensagem</button></article>
+        <article class="panel"><h2>Parâmetros</h2><div class="row"><div><label>Tolerância padrão (min)<input id="setting-tolerance" type="number" min="0"></label></div><div><label>E-mail de alerta<input id="setting-alert-email" type="email" placeholder="nome@escola.com"></label></div></div><button id="save-parameters" class="secondary" type="button">Salvar parâmetros</button></article>
+        <article class="panel"><h2>Parâmetros cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Chave</th><th>Valor</th><th>Atualizado em</th></tr></thead><tbody id="settings-list"></tbody></table></div></article>
       </section>
     </section>
   </main>
   <script src="app/admin-config.js?v=1"></script>
-  <script src="app/admin.js?v=14"></script>
+  <script src="app/admin.js?v=15"></script>
 </body>
 </html>
